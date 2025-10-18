@@ -3,4 +3,3 @@
     { "source": "(.*)", "destination": "/index.html" }
   ]
 }
-{/*this page is used to configure vercel deployment settings*/}
