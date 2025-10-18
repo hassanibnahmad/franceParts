@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Menu, Phone, X } from 'lucide-react';
+import faviconLight from '../assets/favicon_light.png';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -64,7 +65,7 @@ export default function Header() {
           {/* left: logo */}
           <div className="flex items-center space-x-3">
             <a href="/" className="flex items-center">
-              <img src="/src/assets/favicon_light.png" alt="France Parts" className="w-12 h-12 object-contain rounded" />
+              <img src={faviconLight} alt="France Parts" className="w-12 h-12 object-contain rounded" />
             </a>
           </div>
 
@@ -108,7 +109,7 @@ export default function Header() {
         <div className="md:hidden fixed inset-0 z-50 backdrop-blur-sm flex flex-col animate-slide-down">
           <div className="flex items-center justify-between px-4 py-4">
             <a href="/" onClick={() => setIsOpen(false)}>
-              <img src="/src/assets/favicon_light.png" alt="logo" className="w-12 h-12 object-contain rounded" />
+              <img src={faviconLight} alt="logo" className="w-12 h-12 object-contain rounded" />
             </a>
             <button onClick={() => setIsOpen(false)} className="p-3 rounded-lg bg-white/5 text-white mr-1">
               <X size={24} />

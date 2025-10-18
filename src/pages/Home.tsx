@@ -10,6 +10,9 @@ import {
 } from "lucide-react";
 import Accordion from '../components/Accordion';
 import { useState } from "react";
+import logoImg from '../assets/logo.png';
+import carBg from '../assets/car2.png';
+import magasin2 from '../assets/magasin2.png';
 
 export default function Home() {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -88,16 +91,16 @@ export default function Home() {
         <div className="absolute top-20 left-0 w-full flex justify-center pointer-events-none">
           <div className="w-full max-w-6xl h-24 md:h-28 lg:h-32"></div>
         </div>
-        <div className="absolute inset-0 bg-[url('/src/assets/car2.png')] bg-cover bg-center filter brightness-50"></div>
+  <div className="absolute inset-0 bg-cover bg-center filter brightness-50" style={{ backgroundImage: `url(${carBg})` }}></div>
         {/* dark overlay to ensure image fits dark theme */}
         <div className="absolute inset-0 bg-black/60"></div>
         <div className="relative z-10 text-center px-4 animate-fade-in">
           <div className=" mx-auto w-48 h-48 mb-4 animate-logo">
-            <img
-              src="/src/assets/logo.png"
-              alt="France Parts logo"
-              className="w-40 h-40"
-            />
+              <img
+                src={logoImg}
+                alt="France Parts logo"
+                className="w-40 h-40"
+              />
           </div>
           <h1
             data-aos="fade-up"
@@ -153,7 +156,7 @@ export default function Home() {
                   <div className="bg-gradient-to-br from-yellow-500 to-yellow-400 rounded-2xl p-1">
                     <div className="bg-gray-900 rounded-2xl  flex items-center justify-center h-full">
                       <img
-                        src="src/assets/magasin2.png"
+                        src={magasin2}
                         alt="magasin de France Parts"
                         className="w-full h-full object-cover rounded-2xl hover:scale-105 transition-transform duration-400 cursor-pointer"
                       />

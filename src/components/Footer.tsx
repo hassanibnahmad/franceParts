@@ -1,4 +1,5 @@
 import { Facebook, Instagram, MapPin, Phone, Mail } from 'lucide-react';
+import faviconLight from '../assets/favicon_light.png';
 
 export default function Footer() {
   return (
@@ -9,7 +10,7 @@ export default function Footer() {
           <div className="bg-[#071018] rounded-2xl p-8 border border-gray-800/60">
             <div className="flex items-center space-x-3 mb-4">
               <div className="w-24 h-24 rounded-lg flex items-center justify-center">
-                <img src="/src/assets/favicon_light.png" alt="France Parts" className="w-full h-full object-contain" />
+                <img src={faviconLight} alt="France Parts" className="w-full h-full object-contain" />
               </div>
               <div>
                 <div className="text-lg font-bold">France Parts</div>
