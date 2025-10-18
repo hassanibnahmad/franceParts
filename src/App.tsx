@@ -9,6 +9,7 @@ import Blog from './pages/Blog';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Admin from './pages/Admin';
+import NotFound from './pages/NotFound';
 
 function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -58,7 +59,7 @@ function App() {
       case '/admin':
         return <Admin />;
       default:
-        return <Home />;
+        return <NotFound />;
     }
   };
 

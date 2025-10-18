@@ -1,5 +1,5 @@
 import {Target, Award, Heart } from 'lucide-react';
-
+import magasin2 from '../assets/magasin2.png';
 export default function About() {
   const values = [
     {
@@ -60,7 +60,7 @@ export default function About() {
             <div className="relative">
               <div className="bg-gradient-to-br from-yellow-500 to-yellow-400 rounded-2xl p-1">
                 <div className="bg-gray-900 rounded-2xl  flex items-center justify-center h-full">
-                  <img src="src/assets/magasin2.png" alt="magasin de France Parts" className="w-full h-full object-cover rounded-2xl hover:scale-105 transition-transform duration-400 cursor-pointer" />
+                  <img src={magasin2} alt="magasin de France Parts" className="w-full h-full object-cover rounded-2xl hover:scale-105 transition-transform duration-400 cursor-pointer" />
                 </div>
               </div>
             </div>

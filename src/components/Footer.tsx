@@ -140,7 +140,7 @@ export default function Footer() {
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-yellow-500 mb-1">Email</h3>
-                  <p className="text-gray-300">Doc'trot@gmail.com</p>
+                  <p className="text-gray-300">doctrot@outlook.be</p>
                 </div>
               </div>
             </div>
