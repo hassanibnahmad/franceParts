@@ -3,9 +3,9 @@ import faviconLight from '../assets/favicon_light.png';
 
 export default function Footer() {
   return (
-    <footer className="bg-black text-gray-100 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+    <footer className="bg-black text-gray-100 py-12 ">
+      <div className="max-w-7xl mx-auto px-4 sm:px-4 lg:px-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-8">
           {/* Brand */}
           <div className="bg-[#071018] rounded-2xl p-8 border border-gray-800/60">
             <div className="flex items-center space-x-3 mb-4">
@@ -107,18 +107,19 @@ export default function Footer() {
             </h4>
             <div className="space-y-6">
               <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-yellow-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <MapPin className="w-6 h-6 text-gray-900" />
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <MapPin className="w-6 h-6 text-yellow-500" />
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-yellow-500 mb-1">Adresse</h3>
-                  <p className="text-gray-300">Rue de Mérode 174 1060<br />Saint-Gilles</p>
+                  <p className="text-gray-300">Rue de Mérode 174<br />Saint-Gilles</p>
                 </div>
               </div>
+              <div className="border-t border-gray-800 my-4" />
 
               <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-yellow-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Phone className="w-6 h-6 text-gray-900" />
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Phone className="w-6 h-6 text-yellow-500" />
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-yellow-500 mb-1">Téléphone</h3>
@@ -126,9 +127,12 @@ export default function Footer() {
                 </div>
               </div>
 
+              {/*line separator */}
+              <div className="border-t border-gray-800 my-4" />
+
               <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-yellow-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Mail className="w-6 h-6 text-gray-900" />
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Mail className="w-6 h-6 text-yellow-500" />
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-yellow-500 mb-1">Email</h3>

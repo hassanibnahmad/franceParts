@@ -131,21 +131,22 @@ export default function Contact() {
 
               <div className="space-y-6">
                 <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-yellow-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <MapPin className="w-6 h-6 text-gray-900" />
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-6 h-6 text-yellow-500" />
                   </div>
                   <div>
                     <h3 className="font-bold text-lg text-gray-100 mb-1">Adresse</h3>
                     <p className="text-gray-300">
-                      Rue de Mérode 174 1060<br />
+                      Rue de Mérode 174<br />
                       Saint-Gilles
                     </p>
                   </div>
                 </div>
 
+
                 <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-yellow-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Phone className="w-6 h-6 text-gray-900" />
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Phone className="w-6 h-6 text-yellow-500" />
                   </div>
                   <div>
                     <h3 className="font-bold text-lg text-gray-100 mb-1">Téléphone</h3>
@@ -153,9 +154,10 @@ export default function Contact() {
                   </div>
                 </div>
 
+
                 <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-yellow-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Mail className="w-6 h-6 text-gray-900" />
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Mail className="w-6 h-6 text-yellow-500" />
                   </div>
                   <div>
                     <h3 className="font-bold text-lg text-gray-100 mb-1">Email</h3>
@@ -163,9 +165,10 @@ export default function Contact() {
                   </div>
                 </div>
 
+
                 <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-yellow-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Clock className="w-6 h-6 text-gray-900" />
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Clock className="w-6 h-6 text-yellow-500" />
                   </div>
                   <div>
                     <h3 className="font-bold text-lg text-gray-100 mb-1">Horaires</h3>
@@ -203,7 +206,8 @@ export default function Contact() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
         <div className="rounded-xl overflow-hidden shadow-2xl h-96">
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2624.9916256937595!2d2.292292615674067!3d48.85837007928746!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47e66fec70fb1d8f%3A0x40b82c3688c9460!2sEiffel%20Tower!5e0!3m2!1sen!2sfr!4v1234567890"
+          // saint grilles, brussels, belgium map
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2519.486973486263!2d4.350978316034329!3d50.83321397953092!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c3c380e6f5b6b5%3A0xbee5d8e8e6f5e6d1!2sRue%20de%20M%C3%A9rode%20174%2C%201060%20Saint-Gilles%2C%20Belgique!5e0!3m2!1sfr!2sbe!4v1701301234567" 
             width="100%"
             height="100%"
             style={{ border: 0 }}

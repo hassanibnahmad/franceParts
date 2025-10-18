@@ -204,7 +204,7 @@ export default function Admin() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
                   {pricingData.map((item, index) => (
                     <div key={index} className={`bg-gray-800 rounded-xl shadow-xl p-8 relative ${item.popular ? 'border-4 border-yellow-500' : 'border border-gray-700'}`}>
                       {item.popular && (<div className="absolute -top-4 left-1/2 transform -translate-x-1/2"><span className="bg-yellow-500 text-black px-6 py-2 rounded-full font-bold text-sm shadow-lg">Plus populaire</span></div>)}
