@@ -173,9 +173,9 @@ export default function Contact() {
                   <div>
                     <h3 className="font-bold text-lg text-gray-100 mb-1">Horaires</h3>
                     <p className="text-gray-300">
-                      Lundi - Vendredi: 9h - 18h<br />
-                      Samedi: 9h - 13h<br />
-                      Dimanche: Fermé
+                      Lundi - Vendredi:   9h - 18h<br />
+                      Samedi:   9h - 16h<br />
+                      Dimanche: <span className="text-red-500">Fermé</span>
                     </p>
                   </div>
                 </div>
