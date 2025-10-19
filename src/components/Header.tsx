@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Menu, Phone, X } from 'lucide-react';
 import faviconLight from '../assets/favicon_light.png';
 
@@ -29,14 +30,37 @@ export default function Header() {
 
   // disable body scroll when mobile menu is open
   useEffect(() => {
-    if (typeof document === 'undefined') return;
-    const original = document.body.style.overflow;
+    if (typeof document === 'undefined' || typeof window === 'undefined') return;
+    // preserve scroll position by fixing body when the menu is open
+    const scrollY = window.scrollY || window.pageYOffset || 0;
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      // lock scroll by fixing body; store current scroll in a ref handled below
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.width = '100%';
     } else {
-      document.body.style.overflow = original || '';
+      // restore
+      const top = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.width = '';
+      if (top) {
+        const prev = parseInt(top.replace('-', '').replace('px', ''), 10) || 0;
+        window.scrollTo(0, prev);
+      }
     }
-    return () => { document.body.style.overflow = original || ''; };
+    return () => {
+      // clean up in case component unmounts while menu open
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.width = '';
+    };
   }, [isOpen]);
 
   // update activePath when user navigates using browser controls
@@ -57,11 +81,21 @@ export default function Header() {
 
   // auto-close mobile overlay when user scrolls (improves UX)
   useEffect(() => {
+    const allowCloseRef = { current: false } as { current: boolean };
+    let timer: ReturnType<typeof setTimeout> | null = null;
     const onScrollClose = () => {
-      if (isOpen && window.scrollY > 20) setIsOpen(false);
+      if (isOpen && allowCloseRef.current && window.scrollY > 20) setIsOpen(false);
     };
+    // After opening, allow scroll-close only after a short delay to avoid layout-change close
+    if (isOpen) {
+      allowCloseRef.current = false;
+      timer = setTimeout(() => { allowCloseRef.current = true; }, 250);
+    }
     window.addEventListener('scroll', onScrollClose, { passive: true });
-    return () => window.removeEventListener('scroll', onScrollClose);
+    return () => {
+      if (timer) clearTimeout(timer);
+      window.removeEventListener('scroll', onScrollClose);
+    };
   }, [isOpen]);
 
   // header becomes translucent + blurred when scrolled, otherwise mostly transparent
@@ -114,14 +148,14 @@ export default function Header() {
         </div>
       </div>
 
-      {isOpen && (
-        <div className="md:hidden fixed inset-0 z-50 flex items-center justify-center">
-          {/* dimmed blurred backdrop */}
-          <div className="absolute inset-0 bg-black/65 backdrop-blur-sm" onClick={() => setIsOpen(false)} />
+      {isOpen && typeof document !== 'undefined' && createPortal(
+        <div className="md:hidden fixed inset-0 z-[99999] flex items-start justify-start p-4 pt-20">
+          {/* dimmed blurred backdrop (behind panel) */}
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm z-[99990]" onClick={() => setIsOpen(false)} />
 
-          {/* centered panel */}
-          <div className="relative z-50 w-full max-w-md mx-4">
-            <div className="bg-[#0b0b0b]/95 rounded-2xl shadow-2xl overflow-hidden animate-slide-down">
+          {/* centered panel with internal scrolling so it's fully accessible on small viewports */}
+          <div className="relative z-[99999] w-full max-w-md mx-4 max-h-[calc(100vh-6rem)] overflow-auto" style={{ paddingBottom: 'env(safe-area-inset-bottom, 1rem)' }}>
+            <div className="bg-[#0b0b0b]/95 rounded-2xl shadow-2xl animate-slide-down overflow-hidden">
               <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800/40">
                 <a href="/" onClick={() => setIsOpen(false)} className="flex items-center gap-3">
                   <img src={faviconLight} alt="logo" className="w-10 h-10 object-contain rounded" />
@@ -159,7 +193,8 @@ export default function Header() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </header>
   );
