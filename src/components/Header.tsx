@@ -128,11 +128,11 @@ export default function Header() {
 
           {/* right: phone pill */}
           <div className="hidden md:flex items-center">
-            <a href="tel:+32466407256" className="flex items-center space-x-2 px-4 py-2 bg-yellow-400 text-black rounded-lg hover:bg-yellow-300 transition-all duration-300 transform hover:scale-105 font-medium shadow-lg hover:shadow-yellow-400/25"
+            <a href="tel:+32497025806" className="flex items-center space-x-2 px-4 py-2 bg-yellow-400 text-black rounded-lg hover:bg-yellow-300 transition-all duration-300 transform hover:scale-105 font-medium shadow-lg hover:shadow-yellow-400/25"
               title="Appelez-nous maintenant"
             >
               <Phone size={18} className="animate-pulse" />
-              <span>+32 466 40 72 56</span>
+              <span>+32 497 02 58 06</span>
             </a>
           </div>
 
@@ -155,7 +155,7 @@ export default function Header() {
 
           {/* centered panel with internal scrolling so it's fully accessible on small viewports */}
           <div className="relative z-[99999] w-full max-w-md mx-4 max-h-[calc(100vh-6rem)] overflow-auto" style={{ paddingBottom: 'env(safe-area-inset-bottom, 1rem)' }}>
-            <div className="bg-[#0b0b0b]/95 rounded-2xl shadow-2xl animate-slide-down overflow-hidden">
+            <div className="bg-app/95 rounded-2xl shadow-2xl animate-slide-down overflow-hidden">
               <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800/40">
                 <a href="/" onClick={() => setIsOpen(false)} className="flex items-center gap-3">
                   <img src={faviconLight} alt="logo" className="w-10 h-10 object-contain rounded" />
@@ -186,9 +186,9 @@ export default function Header() {
               </nav>
 
               <div className="px-6 pb-8">
-                <a href="tel:+32466407256" className="w-full inline-flex items-center justify-center gap-3 px-6 py-3 bg-yellow-500 text-black rounded-lg font-semibold">
+                <a href="tel:+32497025806" className="w-full inline-flex items-center justify-center gap-3 px-6 py-3 bg-yellow-500 text-black rounded-lg font-semibold">
                   <Phone size={18} />
-                  <span>+32 466 40 72 56</span>
+                  <span>+32 497 02 58 06</span>
                 </a>
               </div>
             </div>

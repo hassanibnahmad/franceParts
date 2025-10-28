@@ -5,10 +5,13 @@ import App from './App.tsx'
 // AOS (Animate On Scroll) for scroll animations
 import AOS from 'aos'
 import 'aos/dist/aos.css'
+import { ToastProvider } from './components/Toast';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <ToastProvider>
+      <App />
+    </ToastProvider>
   </StrictMode>,
 )
 

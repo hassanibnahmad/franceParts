@@ -1,4 +1,4 @@
-import { Car, Cog, Wrench, Package, Search, ShieldCheck } from 'lucide-react';
+import { Car, Cog, Package } from 'lucide-react';
 import Accordion from '../components/Accordion';
 
 export default function Services() {
@@ -43,7 +43,7 @@ export default function Services() {
         'Livraison rapide'
       ]
     },
-    {
+    /*{
       icon: <Wrench className="w-12 h-12" />,
       title: 'Diagnostic et entretien',
       description: 'Inspection, diagnostic et conseils d\'entretien automobile par nos experts.',
@@ -53,7 +53,7 @@ export default function Services() {
         'Réparation rapide',
         'Conseils personnalisés'
       ]
-    },
+    },*/
     {
       icon: <Package className="w-12 h-12" />,
       title: 'Commande de pièces',
@@ -64,8 +64,8 @@ export default function Services() {
         'Toutes marques',
         'Suivi de commande'
       ]
-    },
-    {
+    }
+   /* {
       icon: <Search className="w-12 h-12" />,
       title: 'Expertise automobile',
       description: 'Analyse approfondie de l\'état de votre véhicule avant achat ou vente.',
@@ -86,7 +86,7 @@ export default function Services() {
         'Échange possible',
         'Suivi personnalisé'
       ]
-    }
+    }*/
   ];
 
   return (
@@ -136,7 +136,7 @@ export default function Services() {
         {/* FAQ Section */}
          <section className="py-20 bg-black mt-20">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                  <h2 className="text-4xl font-bold text-gray-100 text-center mb-12">Questions <span className="text-[#FFD700]">Fréquentes</span></h2>
+                  <h2 className="text-4xl font-bold text-gray-100 text-center mb-12">Questions <span className="text-accent">Fréquentes</span></h2>
         
                   <Accordion items={faqItems} autoScroll={true} singleOpen={true} />
                 </div>

@@ -6,6 +6,16 @@ module.exports = {
   ],
   theme: {
     extend: {
+      colors: {
+        // central app palette (matches values in src/index.css)
+        accent: '#FFD700',
+        'accent-600': '#e6bd00',
+        app: '#0b0b0b',
+        surface: '#1a1a1a',
+        'bg-dark': '#0e1418',
+        'surface-1': '#0f1920',
+        'surface-2': '#172027',
+      },
       animation: {
         'gentle-bounce': 'gentleBounce 4s ease-in-out infinite',
         'glow': 'glow 3s ease-in-out infinite alternate',

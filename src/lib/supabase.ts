@@ -14,6 +14,7 @@ export interface BlogPost {
   featured_image: string;
   author: string;
   published: boolean;
+  category?: string | null;
   created_at: string;
   updated_at: string;
 }

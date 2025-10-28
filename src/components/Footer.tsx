@@ -32,9 +32,9 @@ export default function Footer() {
             <nav className="flex flex-col gap-3 text-gray-300">
               <a href="/" className="hover:text-yellow-500">Accueil</a>
               <a href="/services" className="hover:text-yellow-500">Services</a>
-              <a href="/pricing" className="hover:text-yellow-500">Tarifs</a>
-              <a href="/zone" className="hover:text-yellow-500">Zone de Service</a>
-              <a href="/promotions" className="hover:text-yellow-500">Promotions</a>
+              <a href="/tarifs" className="hover:text-yellow-500">Tarifs</a>
+              <a href="/blog" className="hover:text-yellow-500">Blog</a>
+              <a href="/about" className="hover:text-yellow-500">À propos</a>
               <a href="/contact" className="hover:text-yellow-500">Contact</a>
             </nav>
           </div>
@@ -127,7 +127,7 @@ export default function Footer() {
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-yellow-500 mb-1">Téléphone</h3>
-                  <p className="text-gray-300">+32 466 40 72 56</p>
+                  <p className="text-gray-300">+32 497 02 58 06</p>
                 </div>
               </div>
 

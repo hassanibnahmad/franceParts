@@ -3,7 +3,7 @@
 const WhatsAppButton = () => {
   // Safe fallback to window.location when React Router isn't present.
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
-  const phoneNumber = "+32466407256"; // new WhatsApp number
+  const phoneNumber = "+32497025806"; // updated WhatsApp number
   const message = "Bonjour France Parts, je souhaite des informations sur vos services.";
 
   // Hide the button on admin page

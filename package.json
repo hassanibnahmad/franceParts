@@ -4,18 +4,28 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently \"node server.cjs\" \"vite\"",
+    "dev:api": "node server.cjs",
+    "dev:ui": "vite",
     "build": "node ./node_modules/vite/bin/vite.js build",
     "typecheck": "node ./node_modules/typescript/bin/tsc -b --noEmit",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "dev-upload-server": "node scripts/dev-upload-server.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.75.0",
     "@types/react-router-dom": "^5.3.3",
     "aos": "^2.3.4",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^2.2.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.545.0",
+    "node-fetch": "^3.3.2",
+    "nodemailer": "^6.9.3",
+    "quill": "^2.0.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.4"
@@ -27,6 +37,7 @@
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.4",
     "autoprefixer": "^10.4.21",
+    "concurrently": "^8.2.0",
     "eslint": "^9.36.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",

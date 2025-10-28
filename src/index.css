@@ -234,6 +234,15 @@ button:focus-visible {
   }
 }
 
+/* Force dark site theme by default to avoid accidental light-theme overrides
+   that make many sections appear white. This is an explicit, easily
+   reversible override: remove these rules if you prefer to respect the
+   user's OS color-scheme. */
+html, body {
+  background-color: var(--bg) !important;
+  color: var(--text) !important;
+}
+
 /* top accent removed per request */
 
 /* Scrollbar styling */
@@ -284,4 +293,92 @@ button:focus-visible {
 }
 .animate-fade-in {
   animation: fadeIn 420ms ease both;
+}
+
+/* Design helpers: clean modern dashboard tokens */
+:root {
+  --bg-dark: #0e1418;
+  --surface-1: #0f1920;
+  --surface-2: #172027;
+  --muted-2: rgba(255,255,255,0.6);
+  --accent: #e6bd2a; /* soft gold */
+  --accent-2: #5ea4ff; /* soft blue */
+}
+
+.card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,0.04);
+  box-shadow: 0 6px 18px rgba(2,6,23,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+}
+
+.sidebar {
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.04));
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, var(--accent), #d9aa16);
+  color: #081018;
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(230,189,42,0.12);
+}
+
+.btn-ghost {
+  background: rgba(255,255,255,0.02);
+  color: var(--accent);
+  padding: 0.5rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+.btn-danger {
+  background: linear-gradient(180deg,#ff6b6b,#ff4b4b);
+  color: white;
+  padding: 0.5rem 0.9rem;
+  border-radius: 10px;
+}
+
+.small-muted { color: rgba(255,255,255,0.6); font-size: .95rem; }
+
+/* Profile dropdown styles */
+.profile-trigger button { display: inline-flex; align-items: center; gap: 8px; }
+.profile-menu { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06)); border: 1px solid rgba(255,255,255,0.04); }
+.profile-menu button { background: transparent; border: none; color: var(--text); }
+.profile-menu button:hover { background: rgba(255,255,255,0.02); }
+
+.profile-menu .menu-item { color: var(--text); }
+.profile-menu .menu-item svg { color: rgba(255,255,255,0.9); }
+.profile-menu .menu-item span { display: inline-block; }
+.profile-menu .menu-item:focus { outline: none; }
+
+.profile-menu .w-full.flex { border-radius: 10px; }
+
+/* Modal / portal helpers (clean, non-debug styles) */
+[data-portal-modal] {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  pointer-events: auto !important;
+  background: rgba(0,0,0,0.55);
+}
+
+[data-portal-modal] > * {
+  transform: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.portal-card {
+  z-index: 100000 !important;
+  max-width: 900px;
+  width: 100%;
 }

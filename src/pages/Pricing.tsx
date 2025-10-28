@@ -1,5 +1,6 @@
 import { Check } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase';
 
 type PricingItem = {
   service: string;
@@ -9,93 +10,59 @@ type PricingItem = {
   popular?: boolean;
 };
 
-const DEFAULT_PRICING: PricingItem[] = [
-    {
-      service: 'Diagnostic rapide',
-      price: '29€',
-      description: 'Diagnostic électronique complet de votre véhicule',
-      features: [
-        'Lecture des codes défaut',
-        'Rapport détaillé',
-        'Conseils de réparation',
-        'Durée: 30 minutes'
-      ]
-    },
-    {
-      service: "Pièce d'occasion",
-      price: 'À partir de 15€',
-      description: "Pièces d'occasion vérifiées et garanties",
-      features: [
-        'Pièces testées',
-        'Garantie 6 mois',
-        'Large choix',
-        'Disponibilité immédiate'
-      ],
-      popular: true
-    },
-    {
-      service: 'Pièce neuve',
-      price: 'À partir de 49€',
-      description: "Pièces neuves d'origine constructeur",
-      features: [
-        "Pièces d'origine",
-        'Garantie constructeur',
-        'Commande rapide',
-        'Livraison possible'
-      ]
-    },
-    {
-      service: 'Entretien complet',
-      price: '149€',
-      description: 'Révision complète de votre véhicule',
-      features: [
-        'Vidange + filtre',
-        'Contrôle freins',
-        'Contrôle suspension',
-        'Rapport détaillé'
-      ]
-    },
-    {
-      service: 'Expertise véhicule',
-      price: '89€',
-      description: 'Expertise complète avant achat/vente',
-      features: [
-        'Contrôle mécanique',
-        'Contrôle carrosserie',
-        'Estimation valeur',
-        'Rapport écrit'
-      ]
-    },
-    {
-      service: 'Recherche de pièce',
-      price: 'Devis gratuit',
-      description: 'Recherche personnalisée de pièces',
-      features: [
-        'Toutes marques',
-        'Neuf et occasion',
-        'Meilleur prix',
-        'Délai garanti'
-      ]
-    }
-  ];
 export default function Pricing() {
-  // pricing data (read-only on public page) - initialized from localStorage
-  const [pricingData] = useState<PricingItem[]>(() => {
-    try {
-      const raw = localStorage.getItem('pricingData');
-      return raw ? JSON.parse(raw) : DEFAULT_PRICING;
-    } catch (err) {
-      return DEFAULT_PRICING;
-    }
-  });
+  // pricing data (read-only on public page). Fetch from Supabase table `tarifs`.
+  // Pricing is read from the secure server endpoint /api/tarifs.
+  const [pricingData, setPricingData] = useState<PricingItem[]>([]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem('pricingData', JSON.stringify(pricingData));
-    } catch (e) {
-      // ignore
-    }
-  }, [pricingData]);
+    let cancelled = false;
+    (async () => {
+      try {
+        // Try server endpoint first
+        const resp = await fetch('/api/tarifs');
+        if (resp.ok) {
+          const json = await resp.json().catch(() => ({}));
+          const data = json?.data || [];
+          const mapped: PricingItem[] = (data as any[]).map((r) => {
+            let features: string[] = [];
+            try {
+              if (Array.isArray(r.features)) features = r.features as string[];
+              else if (typeof r.features === 'string') features = JSON.parse(r.features || '[]');
+            } catch (e) { features = [] }
+            return { service: String(r.service ?? r.title ?? ''), price: String(r.price ?? ''), description: String(r.description ?? ''), features, popular: !!r.popular } as PricingItem;
+          });
+          if (!cancelled) { setPricingData(mapped || []); return; }
+        }
+
+        // If server endpoint missing or non-ok, fall back to direct Supabase read
+        const { data, error } = await supabase.from('tarifs').select('*').order('created_at', { ascending: true });
+        if (error) {
+          console.warn('Supabase fetch failed', error);
+          if (!cancelled) setPricingData([]);
+          return;
+        }
+        if (!data || data.length === 0) {
+          if (!cancelled) setPricingData([]);
+          return;
+        }
+        const mapped: PricingItem[] = (data as any[]).map((r) => {
+          let features: string[] = [];
+          try {
+            if (Array.isArray(r.features)) features = r.features as string[];
+            else if (typeof r.features === 'string') features = JSON.parse(r.features || '[]');
+          } catch (e) { features = [] }
+          return { service: String(r.service ?? r.title ?? ''), price: String(r.price ?? ''), description: String(r.description ?? ''), features, popular: !!r.popular } as PricingItem;
+        });
+        if (!cancelled) setPricingData(mapped || []);
+      } catch (e) {
+        console.warn('Error fetching tarifs', e);
+        if (!cancelled) setPricingData([]);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, []);
 
   // pricing page is display-only; admin CRUD lives at /admin
 

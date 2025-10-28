@@ -12,8 +12,25 @@ export default function Contact() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // show persistent success state until the user decides to send another
-    setSubmitted(true);
+    // send the contact to the server (will be stored so admin can view it)
+    (async () => {
+      try {
+        const resp = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
+        if (!resp.ok) {
+          const j = await resp.json().catch(() => ({}));
+          throw new Error(j?.error || 'Erreur lors de l\'envoi');
+        }
+        setSubmitted(true);
+        setFormData({ nom: '', email: '', telephone: '', message: '' });
+      } catch (err) {
+        console.error('contact submit error', err);
+        alert('Impossible d\'envoyer le message. Réessayez plus tard.');
+      }
+    })();
   };
 
   const handleChange = (
@@ -28,8 +45,8 @@ export default function Contact() {
     {
       icon: <Phone className="w-6 h-6" />,
       title: "Téléphone",
-      value: "+32 466 40 72 56",
-      link: "tel:+32466407256",
+      value: "+32 497 02 58 06",
+      link: "tel:+32497025806",
     },
     {
       icon: <Mail className="w-6 h-6" />,
@@ -112,7 +129,7 @@ export default function Contact() {
                   value={formData.nom}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 bg-[#2b2b2b] placeholder-gray-400 border border-gray-600 rounded-lg focus:border-[#FFD700] transition-colors duration-200"
+                  className="w-full px-4 py-3 bg-[#2b2b2b] placeholder-gray-400 border border-gray-600 rounded-lg focus:border-[#FFD700] transition-colors duration-200 bg-transparent"
                   placeholder="Votre nom"
                 />
               </div>
@@ -131,7 +148,7 @@ export default function Contact() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 bg-[#2b2b2b] placeholder-gray-400 border border-gray-600 rounded-lg focus:border-[#FFD700] transition-colors duration-200"
+                  className="w-full px-4 py-3 bg-[#2b2b2b] placeholder-gray-400 border border-gray-600 rounded-lg focus:border-[#FFD700] transition-colors duration-200 bg-transparent"
                   placeholder="doctrot@outlook.be"
                 />
               </div>
@@ -149,8 +166,8 @@ export default function Contact() {
                   name="telephone"
                   value={formData.telephone}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-[#2b2b2b] placeholder-gray-400 border border-gray-600 rounded-lg focus:border-[#FFD700] transition-colors duration-200"
-                  placeholder="+32 466 40 72 56"
+                  className="w-full px-4 py-3 bg-[#2b2b2b] placeholder-gray-400 border border-gray-600 rounded-lg focus:border-[#FFD700] transition-colors duration-200 bg-transparent"
+                  placeholder="+32 497 02 58 06"
                 />
               </div>
 
@@ -168,7 +185,7 @@ export default function Contact() {
                   onChange={handleChange}
                   required
                   rows={6}
-                  className="w-full px-4 py-3 bg-[#2b2b2b] placeholder-gray-400 border border-gray-600 rounded-lg focus:border-[#FFD700] transition-colors duration-200 resize-none"
+                  className="w-full px-4 py-3 bg-[#2b2b2b] placeholder-gray-400 border border-gray-600 rounded-lg focus:border-[#FFD700] transition-colors duration-200 resize-none bg-transparent"
                   placeholder="Décrivez votre besoin..."
                 ></textarea>
               </div>
@@ -246,7 +263,7 @@ export default function Contact() {
                   rapide
                 </p>
                 <a
-                  href="https://wa.me/32466407256"
+                  href="https://wa.me/32497025806"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center space-x-2 bg-green-500 text-gray-100 px-6 py-3 rounded-lg font-bold hover:bg-green-600 transition-all duration-300 hover:scale-105"

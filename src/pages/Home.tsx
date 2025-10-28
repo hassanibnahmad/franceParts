@@ -2,7 +2,6 @@ import {
   Settings,
   Wrench,
   Car,
-  MessageCircle,
   MapPin,
   ChevronLeft,
   ChevronRight,
@@ -68,11 +67,7 @@ export default function Home() {
       title: "Vente & Reprise Véhicules",
       description: "Achat, revente et reprise de véhicules français.",
     },
-    {
-      icon: MessageCircle,
-      title: "Diagnostic & Conseil",
-      description: "Assistance & évaluation gratuite.",
-    },
+    
   ];
 
   const nextTestimonial = () => {
@@ -87,7 +82,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      <section className="relative h-screen flex items-center justify-center bg-gradient-to-br from-black via-[#1A1A1A] to-black overflow-hidden">
+  <section className="relative h-screen flex items-center justify-center bg-gradient-to-br from-black via-surface to-black overflow-hidden">
         <div className="absolute top-20 left-0 w-full flex justify-center pointer-events-none">
           <div className="w-full max-w-6xl h-24 md:h-28 lg:h-32"></div>
         </div>
@@ -121,13 +116,13 @@ export default function Home() {
           </div>
         </div>
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 border-2 border-[#FFD700] rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-[#FFD700] rounded-full mt-2"></div>
+          <div className="w-6 h-10 border-2 border-accent rounded-full flex justify-center">
+            <div className="w-1 h-3 bg-accent rounded-full mt-2"></div>
           </div>
         </div>
       </section>
 
-      <section className="py-20 bg-[#0B0B0B]">
+      <section className="py-20 bg-app">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="animate-fade-in">
@@ -136,7 +131,7 @@ export default function Home() {
                 data-aos-duration="3500"
                 className="text-4xl font-bold text-gray-100 mb-6"
               >
-                Qui <span className="text-[#FFD700]">sommes-nous</span> ?
+                Qui <span className="text-accent">sommes-nous</span> ?
               </h2>
               <p className="text-gray-300 text-lg leading-relaxed">
                 France Parts est une entreprise dédiée aux passionnés de
@@ -151,7 +146,7 @@ export default function Home() {
               data-aos-duration="3500"
               className="animate-fade-in delay-100"
             >
-              <div className="aspect-video bg-gradient-to-br from-[#FFD700]/20 to-transparent rounded-2xl overflow-hidden">
+              <div className="aspect-video bg-gradient-to-br from-accent/20 to-transparent rounded-2xl overflow-hidden">
                 <div className="relative">
                   <div className="bg-gradient-to-br from-yellow-500 to-yellow-400 rounded-2xl p-1">
                     <div className="bg-gray-900 rounded-2xl  flex items-center justify-center h-full">
@@ -169,19 +164,19 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-20 bg-black">
+  <section className="py-20 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-gray-100 text-center mb-16">
-            Nos <span className="text-[#FFD700]">Services</span>
+            <h2 className="text-4xl font-bold text-gray-100 text-center mb-16">
+            Nos <span className="text-accent">Services</span>
           </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {services.map((service, index) => (
               <div
                 key={index}
-                className="bg-[#1A1A1A] p-8 rounded-2xl border border-[#FFD700]/20 hover:border-[#FFD700] hover:shadow-[0_0_30px_rgba(255,215,0,0.2)] transition-all duration-500 animate-fade-in"
+                className="bg-surface p-8 rounded-2xl border border-accent/20 hover:border-accent hover:shadow-[0_0_30px_rgba(255,215,0,0.2)] transition-all duration-500 animate-fade-in"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <service.icon className="w-12 h-12 text-[#FFD700] mb-4" />
+                <service.icon className="w-12 h-12 text-accent mb-4" />
                 <h3 className="text-xl font-bold text-gray-100 mb-3">
                   {service.title}
                 </h3>
@@ -198,12 +193,12 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-20 bg-[#0B0B0B]">
+  <section className="py-20 bg-app">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-bold text-gray-100 text-center mb-16">
             Avis <span className="text-[#FFD700]">Clients</span>
           </h2>
-          <div className="relative bg-[#1A1A1A] p-12 rounded-2xl border border-[#FFD700]/20">
+          <div className="relative bg-surface p-12 rounded-2xl border border-accent/20">
             <button
               onClick={prevTestimonial}
               aria-label="Précédent"
@@ -245,7 +240,7 @@ export default function Home() {
               <p className="text-xl text-gray-300 mb-6 italic">
                 "{testimonials[currentTestimonial].comment}"
               </p>
-              <p className="text-[#FFD700] font-semibold">
+              <p className="text-accent font-semibold">
                 {testimonials[currentTestimonial].name}
               </p>
 
@@ -259,16 +254,16 @@ export default function Home() {
 
       <section className="py-20 bg-black">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-gray-100 text-center mb-12">Questions <span className="text-[#FFD700]">Fréquentes</span></h2>
+          <h2 className="text-4xl font-bold text-gray-100 text-center mb-12">Questions <span className="text-accent">Fréquentes</span></h2>
 
           <Accordion items={faqItems} autoScroll={true} singleOpen={true} />
         </div>
       </section>
 
-      <section className="py-20 bg-[#0B0B0B]">
+  <section className="py-20 bg-app">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-bold text-gray-100 text-center mb-12">
-            Notre <span className="text-[#FFD700]">Emplacement</span>
+            Notre <span className="text-accent">Emplacement</span>
           </h2>
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="aspect-video rounded-2xl overflow-hidden border border-[#FFD700]/20">
@@ -283,13 +278,13 @@ export default function Home() {
             </div>
             <div>
               <div className="flex items-start gap-4 mb-6">
-                <MapPin className="w-6 h-6 text-[#FFD700] flex-shrink-0 mt-1" />
+                  <MapPin className="w-6 h-6 text-accent flex-shrink-0 mt-1" />
                 <div>
                   <h3 className="text-xl font-bold text-gray-100 mb-2">
                     Entrepôt Principal
                   </h3>
                   <p className="text-gray-300 leading-relaxed">
-                    Notre entrepôt principal est situé à <span className="text-[#FFD700]">Rue de Merode 174,
+                      Notre entrepôt principal est situé à <span className="text-accent">Rue de Merode 174,
                     Saint-Gilles, Bruxelles</span>, Belgique. Nous assurons des
                     expéditions vers toute l'Europe.
                   </p>
