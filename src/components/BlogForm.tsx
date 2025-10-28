@@ -437,7 +437,32 @@ export default function BlogForm({ initial, onCancel, onSave, submitLabel, uploa
         ['clean']
       ],
       handlers: {
-        // no custom handlers required; Quill's built-in color picker will be used
+        // custom link handler: prompt for a URL and ensure it has a protocol
+        // This avoids links being inserted without http(s):// which can behave
+        // unexpectedly when rendered or clicked.
+        link: function(this: any, value: any) {
+          try {
+            const quillInstance = (this as any).quill as Quill;
+            const range = quillInstance.getSelection && quillInstance.getSelection();
+            // If no selection, do nothing
+            if (!range) return;
+            // Prompt for URL (pre-fill with selection text if it looks like a URL)
+            const selectedText = quillInstance.getText(range.index, range.length) || '';
+            let input = window.prompt('Enter URL', selectedText.startsWith('http') ? selectedText : 'https://');
+            if (input == null) return; // cancelled
+            input = String(input).trim();
+            if (!input) return;
+            // Add protocol if missing
+            if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(input)) {
+              input = 'https://' + input.replace(/^https?:\/\//i, '');
+            }
+            // Apply the link format to the selection
+            quillInstance.format('link', input);
+          } catch (e) {
+            // fallback: let Quill handle it
+            try { (this as any).quill.format('link', value); } catch (er) { /* ignore */ }
+          }
+        }
       }
     } as any;
 
