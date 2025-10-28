@@ -6,18 +6,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      // route upload and posts endpoints to the local dev upload server (express)
-      '/api/upload': {
-        target: 'http://localhost:3333',
-        changeOrigin: true,
-        secure: false,
-      },
-      '/api/posts': {
-        target: 'http://localhost:3333',
-        changeOrigin: true,
-        secure: false,
-      },
-      // other api endpoints (admin-login, etc.) stay routed to the main server
+      // Route all /api requests to the main dev API server (server.cjs).
+      // The server now delegates /api/upload and /api/posts to the local ESM handlers, so a separate upload server is not required.
       '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,

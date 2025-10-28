@@ -487,6 +487,57 @@ app.post('/api/signed-url', async (req, res) => {
   }
 });
 
+// Development convenience: delegate upload/posts routes to the in-repo ESM handlers
+// This allows the front-end to call /api/upload and /api/posts without running a separate dev-upload-server.
+const { pathToFileURL } = require('url');
+function esmModuleUrl(relPath) {
+  return pathToFileURL(path.join(__dirname, relPath)).href;
+}
+
+app.post('/api/upload', async (req, res) => {
+  try {
+    const mod = await import(esmModuleUrl('api/upload.js'));
+    if (mod && typeof mod.default === 'function') return await mod.default(req, res);
+    return res.status(500).json({ error: 'upload handler not available' });
+  } catch (err) {
+    console.error('delegate /api/upload failed', err);
+    return res.status(500).json({ error: 'delegate_failed' });
+  }
+});
+
+app.post('/api/posts', async (req, res) => {
+  try {
+    const mod = await import(esmModuleUrl('api/posts.js'));
+    if (mod && typeof mod.default === 'function') return await mod.default(req, res);
+    return res.status(500).json({ error: 'posts handler not available' });
+  } catch (err) {
+    console.error('delegate /api/posts (POST) failed', err);
+    return res.status(500).json({ error: 'delegate_failed' });
+  }
+});
+
+app.put('/api/posts/:id', async (req, res) => {
+  try {
+    const mod = await import(esmModuleUrl('api/posts.js'));
+    if (mod && typeof mod.default === 'function') return await mod.default(req, res);
+    return res.status(500).json({ error: 'posts handler not available' });
+  } catch (err) {
+    console.error('delegate /api/posts (PUT) failed', err);
+    return res.status(500).json({ error: 'delegate_failed' });
+  }
+});
+
+app.delete('/api/posts/:id', async (req, res) => {
+  try {
+    const mod = await import(esmModuleUrl('api/posts.js'));
+    if (mod && typeof mod.default === 'function') return await mod.default(req, res);
+    return res.status(500).json({ error: 'posts handler not available' });
+  } catch (err) {
+    console.error('delegate /api/posts (DELETE) failed', err);
+    return res.status(500).json({ error: 'delegate_failed' });
+  }
+});
+
 // Preview route to view the reset email HTML without sending it
 app.get('/api/_preview-reset-email', (req, res) => {
   const email = req.query.email || 'user@example.com';
