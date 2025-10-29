@@ -73,22 +73,57 @@ export default async function handler(req, res) {
     let fileContentType;
 
     if (contentType.startsWith('multipart/')) {
-      if (!formidable) return res.status(500).json({ error: 'Server missing optional dependency: formidable. Install it or send JSON base64 payloads.' });
-      // parse multipart form-data
-      await new Promise((resolve, reject) => {
-        const Formidable = formidable.default || formidable;
-        const form = new Formidable.IncomingForm({ maxFileSize: 20 * 1024 * 1024 }); // 20MB
-        form.parse(req, (err, fields, files) => {
-          if (err) return reject(err);
-          const file = files?.file || files?.image || Object.values(files || {})[0];
-          if (!file) return reject(new Error('No file received'));
-          filename = file.name || file.originalFilename || file.filename;
-          const pathOnDisk = file.filepath || file.path;
-          buffer = fs.readFileSync(pathOnDisk);
-          fileContentType = file.mimetype || file.type || 'application/octet-stream';
-          resolve(null);
+      // Prefer formidable when available, but fall back to a simple multipart parser
+      if (formidable) {
+        await new Promise((resolve, reject) => {
+          const Formidable = formidable.default || formidable;
+          const form = new Formidable.IncomingForm({ maxFileSize: 20 * 1024 * 1024 }); // 20MB
+          form.parse(req, (err, fields, files) => {
+            if (err) return reject(err);
+            const file = files?.file || files?.image || Object.values(files || {})[0];
+            if (!file) return reject(new Error('No file received'));
+            filename = file.name || file.originalFilename || file.filename;
+            const pathOnDisk = file.filepath || file.path;
+            buffer = fs.readFileSync(pathOnDisk);
+            fileContentType = file.mimetype || file.type || 'application/octet-stream';
+            resolve(null);
+          });
         });
-      });
+      } else {
+        // Lightweight multipart parser (handles single file uploads)
+        const raw = [];
+        await new Promise((resolve, reject) => {
+          req.on('data', (chunk) => raw.push(chunk));
+          req.on('end', () => resolve(null));
+          req.on('error', reject);
+        });
+        const buf = Buffer.concat(raw);
+        // extract boundary
+        const m = contentType.match(/boundary=(.+)$/i);
+        if (!m) return res.status(400).json({ error: 'Missing multipart boundary' });
+        const boundary = ('--' + m[1]).trim();
+        const parts = buf.split(Buffer.from(boundary));
+        // find the part that contains a filename
+        let found = false;
+        for (let part of parts) {
+          // each part begins with CRLF
+          if (part.length === 0) continue;
+          const idx = part.indexOf('\r\n\r\n');
+          if (idx === -1) continue;
+          const headersBuf = part.slice(0, idx).toString('utf8');
+          const bodyBuf = part.slice(idx + 4, part.length - 2); // remove trailing CRLF
+          const cdMatch = headersBuf.match(/Content-Disposition: form-data; name="([^"]+)"(?:; filename="([^"]+)")?/i);
+          if (cdMatch && cdMatch[2]) {
+            filename = cdMatch[2];
+            const ctMatch = headersBuf.match(/Content-Type: ([^\r\n]+)/i);
+            fileContentType = (ctMatch && ctMatch[1]) || 'application/octet-stream';
+            buffer = bodyBuf;
+            found = true;
+            break;
+          }
+        }
+        if (!found) return res.status(400).json({ error: 'No file found in multipart payload' });
+      }
     } else {
       // expect JSON base64 payload: { filename, contentType, data }
       const body = req.body || {};
