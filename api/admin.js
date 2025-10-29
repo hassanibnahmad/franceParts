@@ -5,7 +5,10 @@ import nodemailer from 'nodemailer';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
-const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+// Do not create the Supabase client at module load time — initialize inside the handler
+// after verifying envs. Creating at load time can throw or cause runtime errors
+// in serverless environments when envs are not present.
+let supabaseAdmin = null;
 
 function parseCookies(req) {
   const header = req.headers?.cookie || '';
@@ -47,8 +50,8 @@ function setCors(req, res) {
   const origin = req.headers.origin || '*';
   res.setHeader('Access-Control-Allow-Origin', origin);
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-Upload-Token, X-Upload-Secret');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
 }
 
 export default async function handler(req, res) {
@@ -67,6 +70,17 @@ export default async function handler(req, res) {
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
       console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in env');
       return res.status(500).json({ error: 'Server misconfigured: missing SUPABASE env' });
+    }
+
+    // initialize supabase client lazily so module load won't fail in environments
+    // where envs are temporarily missing (and to avoid throwing during import)
+    if (!supabaseAdmin) {
+      try {
+        supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+      } catch (e) {
+        console.error('failed to create supabase client', e);
+        return res.status(500).json({ error: 'Server misconfigured: supabase init failed' });
+      }
     }
     // POST /api/admin-login
     if (path === '/-login' || path === '/login' || req.url.endsWith('/admin-login')) {
