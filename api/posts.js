@@ -26,6 +26,10 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Methods', 'POST,PUT,DELETE,OPTIONS');
   };
   setCors();
+  // debug
+  try {
+    if (process.env.DEBUG_API === 'true') console.log('[posts] incoming', { method: req.method, url: req.url, headers: req.headers });
+  } catch (e) {}
   if (req.method === 'OPTIONS') return res.status(204).end();
   // allow POST /api/posts (create)
   // allow PUT /api/posts/:id (update)
@@ -61,6 +65,8 @@ export default async function handler(req, res) {
     console.warn('Unauthorized posts request');
     return res.status(401).json({ error: 'Unauthorized' });
   }
+
+  try { if (process.env.DEBUG_API === 'true') console.log('[posts] authorized=', authorized); } catch (e) {}
 
   try {
     if (req.method === 'POST') {
