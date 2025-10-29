@@ -3,11 +3,10 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
-if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-  console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY env vars');
-}
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+// Lazy-init Supabase client to avoid throwing at module import time when envs
+// are not yet available in serverless environments. This mirrors the defensive
+// pattern used in `api/admin.js`.
+let supabase = null;
 
 function getIdFromUrl(req) {
   try {
@@ -28,9 +27,24 @@ export default async function handler(req, res) {
   setCors();
   // debug
   try {
-    if (process.env.DEBUG_API === 'true') console.log('[posts] incoming', { method: req.method, url: req.url, headers: req.headers });
+    const DEBUG = process.env.DEBUG_API === 'true';
+    if (DEBUG) console.log('[posts] incoming', { method: req.method, url: req.url, headers: req.headers });
   } catch (e) {}
   if (req.method === 'OPTIONS') return res.status(204).end();
+
+  // lazy initialize supabase admin client
+  if (!supabase) {
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('posts handler missing SUPABASE envs');
+      return res.status(500).json({ error: 'Server misconfigured: missing SUPABASE env' });
+    }
+    try {
+      supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    } catch (e) {
+      console.error('posts handler supabase init failed', e);
+      return res.status(500).json({ error: 'Server misconfigured: supabase init failed' });
+    }
+  }
   // allow POST /api/posts (create)
   // allow PUT /api/posts/:id (update)
   // allow DELETE /api/posts/:id (delete)
@@ -40,7 +54,7 @@ export default async function handler(req, res) {
   const tokenSecret = process.env.UPLOAD_TOKEN_SECRET;
   let authorized = false;
   if (tokenSecret) {
-    const providedToken = req.headers['x-upload-token'];
+    const providedToken = req.headers['x-upload-token'] || req.headers['X-Upload-Token'];
     if (providedToken) {
       try {
         const crypto = await import('crypto');
@@ -61,8 +75,9 @@ export default async function handler(req, res) {
     const provided = req.headers['x-upload-secret'] || req.headers['X-Upload-Secret'];
     if (provided && provided === expected) authorized = true;
   }
+  // if upload auth is configured but we didn't verify, reject the request
   if (!authorized && (expected || tokenSecret)) {
-    console.warn('Unauthorized posts request');
+    try { if (process.env.DEBUG_API === 'true') console.warn('[posts] unauthorized request', { hasToken: !!req.headers['x-upload-token'], hasSecret: !!req.headers['x-upload-secret'] }); } catch (e) {}
     return res.status(401).json({ error: 'Unauthorized' });
   }
 

@@ -4,7 +4,7 @@ import crypto from 'crypto';
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
-const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+let supabaseAdmin = null;
 
 function parseCookies(req) {
   const header = req.headers?.cookie || '';
@@ -40,11 +40,22 @@ function verifyToken(token, secret) {
 export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
   try {
+    const DEBUG = process.env.DEBUG_API === 'true';
+    if (DEBUG) console.log('[contacts] incoming', { method: req.method, url: req.url, headers: req.headers });
     const cookies = parseCookies(req);
     const token = cookies.admin_session;
     const cookieSecret = process.env.COOKIE_SECRET || process.env.UPLOAD_TOKEN_SECRET;
     const payload = verifyToken(token, cookieSecret);
     if (!payload) return res.status(401).json({ error: 'unauthorized' });
+
+    // lazy init supabase
+    if (!supabaseAdmin) {
+      if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+        console.error('contacts handler missing SUPABASE envs');
+        return res.status(500).json({ error: 'internal' });
+      }
+      try { supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY); } catch (e) { console.error('contacts supabase init failed', e); return res.status(500).json({ error: 'internal' }); }
+    }
 
     const { data, error } = await supabaseAdmin.from('contacts').select('*').order('created_at', { ascending: false });
     if (error) { console.error('supabase contacts fetch error', error); return res.status(500).json({ error: 'internal' }); }

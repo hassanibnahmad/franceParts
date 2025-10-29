@@ -4,7 +4,7 @@ import crypto from 'crypto';
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
-const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+let supabaseAdmin = null;
 
 function parseCookies(req) {
   const header = req.headers?.cookie || '';
@@ -56,6 +56,15 @@ export default async function handler(req, res) {
 
     const id = idFromUrl(req) || (req.query && req.query.id) || null;
     if (!id) return res.status(400).json({ error: 'missing_id' });
+
+    // lazy-init supabase admin client
+    if (!supabaseAdmin) {
+      if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+        console.error('contacts.delete handler missing SUPABASE envs');
+        return res.status(500).json({ error: 'internal' });
+      }
+      try { supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY); } catch (e) { console.error('contacts.delete supabase init failed', e); return res.status(500).json({ error: 'internal' }); }
+    }
 
     const { error } = await supabaseAdmin.from('contacts').delete().eq('id', id);
     if (error) { console.error('supabase delete error', error); return res.status(500).json({ error: 'internal' }); }

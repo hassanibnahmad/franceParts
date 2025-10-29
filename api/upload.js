@@ -7,11 +7,7 @@ import fs from 'fs';
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
-if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-  console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY env vars');
-}
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+let supabase = null;
 
 // Unified upload handler: supports JSON base64 payloads and multipart/form-data
 export default async function handler(req, res) {
@@ -28,6 +24,15 @@ export default async function handler(req, res) {
   setCors();
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  // lazy init supabase admin client
+  if (!supabase) {
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('upload handler missing SUPABASE envs');
+      return res.status(500).json({ error: 'Server misconfigured: missing SUPABASE env' });
+    }
+    try { supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY); } catch (e) { console.error('upload supabase init failed', e); return res.status(500).json({ error: 'Server misconfigured' }); }
+  }
 
   // Simple protection: require an upload secret header when set
   // Accept either a server-issued token (x-upload-token) or the legacy x-upload-secret.

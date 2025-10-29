@@ -3,9 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
-if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY env vars');
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+// lazy-init supabase admin client to avoid import-time failures when envs are missing
+let supabase = null;
 
 function getIdFromUrl(req) {
   try {
@@ -20,7 +19,7 @@ async function isAuthorized(req) {
   const tokenSecret = process.env.UPLOAD_TOKEN_SECRET;
   let authorized = false;
   if (tokenSecret) {
-    const providedToken = req.headers['x-upload-token'];
+    const providedToken = req.headers['x-upload-token'] || req.headers['X-Upload-Token'];
     if (providedToken) {
       try {
         const crypto = await import('crypto');
@@ -64,7 +63,23 @@ export default async function handler(req, res) {
       res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
     };
     setCors();
+    const DEBUG = process.env.DEBUG_API === 'true';
+    if (DEBUG) console.log('[tarifs] incoming', { method: req.method, url: req.url, headers: req.headers });
     if (req.method === 'OPTIONS') return res.status(204).end();
+
+    // lazy init supabase
+    if (!supabase) {
+      if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+        console.error('tarifs handler missing SUPABASE envs');
+        return res.status(500).json({ error: 'Server misconfigured: missing SUPABASE env' });
+      }
+      try {
+        supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+      } catch (e) {
+        console.error('tarifs supabase init failed', e);
+        return res.status(500).json({ error: 'Server misconfigured: supabase init failed' });
+      }
+    }
     if (req.method === 'GET') {
       const { data, error } = await supabase.from('tarifs').select('*').order('created_at', { ascending: true });
       if (error) { console.error('supabase select tarifs error', error); return res.status(500).json({ error: error.message || 'Select failed' }); }
