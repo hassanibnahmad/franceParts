@@ -61,6 +61,7 @@ export default async function handler(req, res) {
 
   const path = (req.url || '').replace(/^\/api\/admin/, '') || '';
 
+  const DEBUG = process.env.DEBUG_API === 'true';
   try {
     // sanity check envs
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
@@ -179,7 +180,12 @@ export default async function handler(req, res) {
 
     return res.status(404).json({ error: 'Not found' });
   } catch (err) {
-    console.error('admin handler error', err);
+    // log stack for Vercel function logs
+    console.error('admin handler error', err && err.stack ? err.stack : String(err));
+    // Return limited error details only when DEBUG_API=true to avoid leaking secrets in production
+    if (DEBUG) {
+      return res.status(500).json({ error: 'internal', details: String(err && err.message ? err.message : err) });
+    }
     return res.status(500).json({ error: 'internal' });
   }
 }
