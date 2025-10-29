@@ -140,7 +140,7 @@ export default function Admin() {
   const [contacts, setContacts] = useState<any[]>([]);
   const fetchContacts = async () => {
     try {
-      const resp = await fetch('/api/contacts');
+  const resp = await fetch('/api/contacts', { credentials: 'include' });
       if (!resp.ok) throw new Error('Failed to load');
       const json = await resp.json().catch(() => ({}));
       setContacts(json?.data || []);
@@ -152,7 +152,7 @@ export default function Admin() {
   const deleteContact = (id: string) => {
     openConfirm('Supprimer ce message ?', 'Supprimer le message', async () => {
       try {
-        const resp = await fetch(`/api/contacts/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  const resp = await fetch(`/api/contacts/${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'include' });
         if (!resp.ok) throw new Error('Delete failed');
         setContacts(prev => prev.filter(c => String(c.id) !== String(id)));
         push({ type: 'success', message: 'Message supprimé.' });
@@ -169,7 +169,7 @@ export default function Admin() {
     e.preventDefault();
     if (!password || !password.trim()) { push({ type: 'error', message: 'Veuillez saisir le mot de passe administrateur.' }); return; }
     try {
-      const resp = await fetch('/api/admin-login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+  const resp = await fetch('/api/admin-login', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
       const data = await resp.json().catch(() => ({}));
       if (!resp.ok) {
         const msg = data?.error === 'invalid_credentials' ? 'Mot de passe incorrect.' : (data?.error || 'Erreur serveur');
@@ -181,7 +181,7 @@ export default function Admin() {
       setIsAuthenticated(true);
       // request a short-lived upload token from the server (server issues it only for authenticated sessions)
       try {
-        const tResp = await fetch('/api/admin-token', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+  const tResp = await fetch('/api/admin-token', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' } });
         if (tResp.ok) {
           const tData = await tResp.json().catch(() => ({}));
           if (tData?.token) setUploadToken(tData.token);
@@ -207,7 +207,7 @@ export default function Admin() {
     }
     if (newPassword !== confirmNewPassword) { push({ type: 'error', message: 'La confirmation ne correspond pas.' }); return; }
     try {
-  const resp = await fetch('/api/admin-change-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: adminEmailLocal, current_password: oldPassword, new_password: newPassword }) });
+  const resp = await fetch('/api/admin-change-password', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: adminEmailLocal, current_password: oldPassword, new_password: newPassword }) });
       const data = await resp.json().catch(() => ({}));
       if (!resp.ok) {
         const msg = data?.error || (resp.status === 403 ? 'Ancien mot de passe incorrect.' : 'Erreur serveur');
@@ -232,7 +232,7 @@ export default function Admin() {
     if (newEmail !== confirmEmail) { push({ type: 'error', message: 'Les emails ne correspondent pas.' }); return; }
     if (!changeEmailPassword) { push({ type: 'error', message: 'Veuillez saisir votre mot de passe actuel pour confirmer.' }); return; }
     try {
-      const resp = await fetch('/api/admin-change-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: adminEmail, current_password: changeEmailPassword, new_email: newEmail }) });
+  const resp = await fetch('/api/admin-change-email', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: adminEmail, current_password: changeEmailPassword, new_email: newEmail }) });
       const data = await resp.json().catch(() => ({}));
       if (!resp.ok) {
         const msg = data?.error === 'email_taken' ? 'Cet email est déjà utilisé.' : (data?.error || 'Erreur serveur');
