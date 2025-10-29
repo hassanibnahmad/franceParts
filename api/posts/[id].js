@@ -50,10 +50,15 @@ async function isAuthorized(req) {
 
 export default async function handler(req, res) {
   try {
+    // lightweight debug logging when enabled
+    try {
+      if (process.env.DEBUG_API === 'true') console.log('[posts/[id]] incoming', { method: req.method, url: req.url, headers: req.headers });
+    } catch (e) {}
     setCors(req, res);
     if (req.method === 'OPTIONS') return res.status(204).end();
 
     const authorized = await isAuthorized(req);
+    try { if (process.env.DEBUG_API === 'true') console.log('[posts/[id]] authorized=', authorized); } catch (e) {}
     if (!authorized) return res.status(401).json({ error: 'Unauthorized' });
 
     if (req.method === 'PUT') {
