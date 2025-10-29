@@ -16,7 +16,17 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 // Unified upload handler: supports JSON base64 payloads and multipart/form-data
 export default async function handler(req, res) {
 // eslint-disable-line
-  
+
+  // CORS helper (respond to preflight and attach headers to responses)
+  const setCors = () => {
+    const origin = req.headers.origin || '*';
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-upload-token, x-upload-secret');
+    res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
+  };
+  setCors();
+  if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   // Simple protection: require an upload secret header when set

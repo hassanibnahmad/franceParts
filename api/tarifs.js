@@ -55,6 +55,16 @@ const DEFAULT_PRICING = [
 
 export default async function handler(req, res) {
   try {
+    // CORS helper
+    const setCors = () => {
+      const origin = req.headers.origin || '*';
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-upload-token, x-upload-secret');
+      res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+    };
+    setCors();
+    if (req.method === 'OPTIONS') return res.status(204).end();
     if (req.method === 'GET') {
       const { data, error } = await supabase.from('tarifs').select('*').order('created_at', { ascending: true });
       if (error) { console.error('supabase select tarifs error', error); return res.status(500).json({ error: error.message || 'Select failed' }); }

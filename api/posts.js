@@ -17,6 +17,16 @@ function getIdFromUrl(req) {
 }
 
 export default async function handler(req, res) {
+  // CORS helper
+  const setCors = () => {
+    const origin = req.headers.origin || '*';
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-upload-token, x-upload-secret');
+    res.setHeader('Access-Control-Allow-Methods', 'POST,PUT,DELETE,OPTIONS');
+  };
+  setCors();
+  if (req.method === 'OPTIONS') return res.status(204).end();
   // allow POST /api/posts (create)
   // allow PUT /api/posts/:id (update)
   // allow DELETE /api/posts/:id (delete)
