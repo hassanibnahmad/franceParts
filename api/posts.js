@@ -25,10 +25,14 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Methods', 'POST,PUT,DELETE,OPTIONS');
   };
   setCors();
-  // debug
+  // lightweight diagnostics: always log method/url and presence of auth headers/cookie
   try {
+    const hasCookie = !!req.headers?.cookie;
+    const hasToken = !!(req.headers['x-upload-token'] || req.headers['X-Upload-Token']);
+    const hasSecret = !!(req.headers['x-upload-secret'] || req.headers['X-Upload-Secret']);
+    console.log('[posts] incoming', { method: req.method, url: req.url, hasCookie, hasToken, hasSecret });
     const DEBUG = process.env.DEBUG_API === 'true';
-    if (DEBUG) console.log('[posts] incoming', { method: req.method, url: req.url, headers: req.headers });
+    if (DEBUG) console.log('[posts] headers', req.headers);
   } catch (e) {}
   if (req.method === 'OPTIONS') return res.status(204).end();
 
@@ -187,7 +191,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true });
     }
 
-    return res.status(405).json({ error: 'Method not allowed' });
+  return res.status(405).json({ error: 'Method not allowed', method: req.method, url: req.url });
   } catch (err) {
     console.error('posts handler error', err);
     return res.status(500).json({ error: 'Internal server error' });
