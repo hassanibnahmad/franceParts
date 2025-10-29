@@ -102,27 +102,27 @@ export default async function handler(req, res) {
         const m = contentType.match(/boundary=(.+)$/i);
         if (!m) return res.status(400).json({ error: 'Missing multipart boundary' });
         const boundary = ('--' + m[1]).trim();
-        const parts = buf.split(Buffer.from(boundary));
-        // find the part that contains a filename
-        let found = false;
-        for (let part of parts) {
-          // each part begins with CRLF
-          if (part.length === 0) continue;
-          const idx = part.indexOf('\r\n\r\n');
-          if (idx === -1) continue;
-          const headersBuf = part.slice(0, idx).toString('utf8');
-          const bodyBuf = part.slice(idx + 4, part.length - 2); // remove trailing CRLF
-          const cdMatch = headersBuf.match(/Content-Disposition: form-data; name="([^"]+)"(?:; filename="([^"]+)")?/i);
-          if (cdMatch && cdMatch[2]) {
-            filename = cdMatch[2];
-            const ctMatch = headersBuf.match(/Content-Type: ([^\r\n]+)/i);
-            fileContentType = (ctMatch && ctMatch[1]) || 'application/octet-stream';
-            buffer = bodyBuf;
-            found = true;
-            break;
-          }
+        const boundaryBuf = Buffer.from(boundary);
+        const firstBoundaryIndex = buf.indexOf(boundaryBuf);
+        if (firstBoundaryIndex === -1) return res.status(400).json({ error: 'Invalid multipart payload' });
+        const nextBoundaryIndex = buf.indexOf(boundaryBuf, firstBoundaryIndex + boundaryBuf.length);
+        if (nextBoundaryIndex === -1) return res.status(400).json({ error: 'Invalid multipart payload' });
+        const part = buf.slice(firstBoundaryIndex + boundaryBuf.length, nextBoundaryIndex);
+        const headerSep = Buffer.from('\r\n\r\n');
+        const hdrIdx = part.indexOf(headerSep);
+        if (hdrIdx === -1) return res.status(400).json({ error: 'Malformed multipart part' });
+        const headersBuf = part.slice(0, hdrIdx).toString('utf8');
+        let bodyBuf = part.slice(hdrIdx + headerSep.length);
+        // Trim a trailing CRLF if present
+        if (bodyBuf.length >= 2 && bodyBuf[bodyBuf.length - 2] === 0x0d && bodyBuf[bodyBuf.length - 1] === 0x0a) {
+          bodyBuf = bodyBuf.slice(0, bodyBuf.length - 2);
         }
-        if (!found) return res.status(400).json({ error: 'No file found in multipart payload' });
+        const cdMatch = headersBuf.match(/Content-Disposition: form-data; name="([^"]+)"(?:; filename="([^"]+)")?/i);
+        if (!cdMatch || !cdMatch[2]) return res.status(400).json({ error: 'No file found in multipart payload' });
+        filename = cdMatch[2];
+        const ctMatch = headersBuf.match(/Content-Type: ([^\r\n]+)/i);
+        fileContentType = (ctMatch && ctMatch[1]) || 'application/octet-stream';
+        buffer = bodyBuf;
       }
     } else {
       // expect JSON base64 payload: { filename, contentType, data }
