@@ -52,12 +52,21 @@ function setCors(req, res) {
 }
 
 export default async function handler(req, res) {
+  try {
+    // lightweight request tracing for debugging on Vercel
+    console.log('[admin] incoming', { method: req.method, url: req.url });
+  } catch (e) {}
   setCors(req, res);
   if (req.method === 'OPTIONS') return res.status(204).end();
 
   const path = (req.url || '').replace(/^\/api\/admin/, '') || '';
 
   try {
+    // sanity check envs
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in env');
+      return res.status(500).json({ error: 'Server misconfigured: missing SUPABASE env' });
+    }
     // POST /api/admin-login
     if (path === '/-login' || path === '/login' || req.url.endsWith('/admin-login')) {
       if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
