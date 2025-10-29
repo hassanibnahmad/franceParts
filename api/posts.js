@@ -52,6 +52,7 @@ export default async function handler(req, res) {
   // Basic protection: require upload secret when set
   const expected = process.env.UPLOAD_SECRET;
   const tokenSecret = process.env.UPLOAD_TOKEN_SECRET;
+  const cookieSecret = process.env.COOKIE_SECRET || process.env.UPLOAD_TOKEN_SECRET;
   let authorized = false;
   if (tokenSecret) {
     const providedToken = req.headers['x-upload-token'] || req.headers['X-Upload-Token'];
@@ -74,6 +75,37 @@ export default async function handler(req, res) {
   if (!authorized && expected) {
     const provided = req.headers['x-upload-secret'] || req.headers['X-Upload-Secret'];
     if (provided && provided === expected) authorized = true;
+  }
+
+  // allow cookie-based admin sessions as an alternative when present
+  if (!authorized && cookieSecret) {
+    try {
+      const header = req.headers?.cookie || '';
+      const obj = {};
+      header.split(';').forEach((pair) => {
+        const idx = pair.indexOf('=');
+        if (idx === -1) return;
+        const key = pair.substring(0, idx).trim();
+        const val = pair.substring(idx + 1).trim();
+        obj[key] = val;
+      });
+      const sessionToken = obj['admin_session'];
+      if (sessionToken) {
+        try {
+          const crypto = await import('crypto');
+          const parts = String(sessionToken).split('.');
+          if (parts.length === 2) {
+            const [b, mac] = parts;
+            const expectedMac = crypto.createHmac('sha256', String(cookieSecret)).update(b).digest('hex');
+            if (crypto.timingSafeEqual(Buffer.from(expectedMac, 'hex'), Buffer.from(mac, 'hex'))) {
+              const json = Buffer.from(b, 'base64url').toString('utf8');
+              const objp = JSON.parse(json);
+              if (!objp.exp || Date.now() <= objp.exp) authorized = true;
+            }
+          }
+        } catch (e) { /* ignore cookie verify errors */ }
+      }
+    } catch (e) { /* ignore */ }
   }
   // if upload auth is configured but we didn't verify, reject the request
   if (!authorized && (expected || tokenSecret)) {

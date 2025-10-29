@@ -262,11 +262,11 @@ export default function Admin() {
       if (uploadToken) headers['x-upload-token'] = uploadToken;
 
       if (editingPost) {
-        const resp = await fetch(`/api/posts/${editingPost.id}`, { method: 'PUT', headers, body: JSON.stringify({ ...post, updated_at: new Date().toISOString() }) });
+        const resp = await fetch(`/api/posts/${editingPost.id}`, { method: 'PUT', headers, body: JSON.stringify({ ...post, updated_at: new Date().toISOString() }), credentials: 'include' });
         if (!resp.ok) throw new Error((await resp.json().catch(() => ({}))).error || 'Update failed');
         push({ type: 'success', message: 'Article mis à jour.' });
       } else {
-        const resp = await fetch('/api/posts', { method: 'POST', headers, body: JSON.stringify(post) });
+        const resp = await fetch('/api/posts', { method: 'POST', headers, body: JSON.stringify(post), credentials: 'include' });
         if (!resp.ok) throw new Error((await resp.json().catch(() => ({}))).error || 'Create failed');
         push({ type: 'success', message: 'Article créé.' });
       }
@@ -283,7 +283,7 @@ export default function Admin() {
       try {
         const headers: Record<string, string> = { 'Content-Type': 'application/json' };
         if (uploadToken) headers['x-upload-token'] = uploadToken;
-        const resp = await fetch(`/api/posts/${id}`, { method: 'DELETE', headers });
+  const resp = await fetch(`/api/posts/${id}`, { method: 'DELETE', headers, credentials: 'include' });
         if (!resp.ok) throw new Error((await resp.json().catch(() => ({}))).error || 'Delete failed');
         fetchPosts();
         push({ type: 'success', message: 'Article supprimé.' });
@@ -297,7 +297,7 @@ export default function Admin() {
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (uploadToken) headers['x-upload-token'] = uploadToken;
-      const resp = await fetch(`/api/posts/${post.id}`, { method: 'PUT', headers, body: JSON.stringify({ published: !post.published }) });
+      const resp = await fetch(`/api/posts/${post.id}`, { method: 'PUT', headers, body: JSON.stringify({ published: !post.published }), credentials: 'include' });
       if (!resp.ok) throw new Error((await resp.json().catch(() => ({}))).error || 'Update failed');
       fetchPosts();
     } catch (e) { console.error(e); }
