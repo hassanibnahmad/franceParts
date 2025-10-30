@@ -1,11 +1,24 @@
-// Archived: this dynamic handler was replaced by consolidated `api/posts.js`.
-// Keeping a tiny, explicit handler that returns 410 ensures there is no
-// accidental behavior while we keep only `api/posts.js` as the canonical handler.
-export default function postsIdHandler(req, res) {
+// This dynamic handler now forwards requests to the consolidated `api/posts.js`
+// implementation so that id-scoped requests (PUT/DELETE to /api/posts/:id)
+// are handled by the authoritative code path. Keeping a small forwarder avoids
+// duplication and preserves the canonical authorization logic.
+import postsHandler from '../posts.js';
+
+export default async function postsIdHandler(req, res) {
+  // Set CORS for preflight and simple requests
   res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-upload-token, x-upload-secret');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
   if (req.method === 'OPTIONS') return res.status(204).end();
-  return res.status(410).json({ error: 'This dynamic handler is archived. Use /api/posts (consolidated).' });
+
+  // Delegate to consolidated handler which already supports id in the URL
+  // via getIdFromUrl. This ensures PUT/DELETE/POST calls are handled
+  // consistently and receive the same auth checks and responses.
+  try {
+    return await postsHandler(req, res);
+  } catch (err) {
+    console.error('[postsId] forward error', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 }
