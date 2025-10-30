@@ -4,8 +4,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
 // Lazy-init Supabase client to avoid throwing at module import time when envs
-// are not yet available in serverless environments. This mirrors the defensive
-// pattern used in `api/admin.js`.
+// are not yet available in serverless environments.
 let supabase = null;
 
 function getIdFromUrl(req) {
@@ -15,7 +14,7 @@ function getIdFromUrl(req) {
   } catch (e) { return null; }
 }
 
-export default async function handler(req, res) {
+export default async function postsHandler(req, res) {
   // CORS helper
   const setCors = () => {
     const origin = req.headers.origin || '*';
@@ -25,6 +24,7 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Methods', 'POST,PUT,DELETE,OPTIONS');
   };
   setCors();
+
   // lightweight diagnostics: always log method/url and presence of auth headers/cookie
   try {
     const hasCookie = !!req.headers?.cookie;
@@ -49,15 +49,13 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Server misconfigured: supabase init failed' });
     }
   }
-  // allow POST /api/posts (create)
-  // allow PUT /api/posts/:id (update)
-  // allow DELETE /api/posts/:id (delete)
 
   // Basic protection: require upload secret when set
   const expected = process.env.UPLOAD_SECRET;
   const tokenSecret = process.env.UPLOAD_TOKEN_SECRET;
   const cookieSecret = process.env.COOKIE_SECRET || process.env.UPLOAD_TOKEN_SECRET;
   let authorized = false;
+
   if (tokenSecret) {
     const providedToken = req.headers['x-upload-token'] || req.headers['X-Upload-Token'];
     if (providedToken) {
@@ -76,6 +74,7 @@ export default async function handler(req, res) {
       } catch (e) { /* ignore token verify errors */ }
     }
   }
+
   if (!authorized && expected) {
     const provided = req.headers['x-upload-secret'] || req.headers['X-Upload-Secret'];
     if (provided && provided === expected) authorized = true;
@@ -111,6 +110,7 @@ export default async function handler(req, res) {
       }
     } catch (e) { /* ignore */ }
   }
+
   // if upload auth is configured but we didn't verify, reject the request
   if (!authorized && (expected || tokenSecret)) {
     try { if (process.env.DEBUG_API === 'true') console.warn('[posts] unauthorized request', { hasToken: !!req.headers['x-upload-token'], hasSecret: !!req.headers['x-upload-secret'] }); } catch (e) {}
@@ -166,7 +166,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: fetchErr.message || 'Fetch failed' });
       }
 
-  const featured = existing && existing.featured_image;
+      const featured = existing && existing.featured_image;
       if (featured) {
         // try to extract the storage path inside the bucket (e.g. posts/xxx.png)
         const idx = featured.indexOf('/blog-images/');
@@ -191,9 +191,9 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true });
     }
 
-  return res.status(405).json({ error: 'Method not allowed', method: req.method, url: req.url });
+    return res.status(405).json({ error: 'Method not allowed', method: req.method, url: req.url });
   } catch (err) {
     console.error('posts handler error', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
-};
+}

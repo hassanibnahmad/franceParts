@@ -45,7 +45,7 @@ function idFromUrl(req) {
   return null;
 }
 
-export default async function handler(req, res) {
+export default async function contactsIdHandler(req, res) {
   if (req.method !== 'DELETE') return res.status(405).json({ error: 'Method not allowed' });
   try {
     const cookies = parseCookies(req);

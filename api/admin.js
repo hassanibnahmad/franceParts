@@ -54,7 +54,7 @@ function setCors(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
 }
 
-export default async function handler(req, res) {
+export default async function adminHandler(req, res) {
   try {
     // lightweight request tracing for debugging on Vercel
     console.log('[admin] incoming', { method: req.method, url: req.url });

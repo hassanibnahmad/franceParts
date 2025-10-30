@@ -52,7 +52,7 @@ const DEFAULT_PRICING = [
   { service: 'Commande de pièces', price: 'Sur devis', description: 'Recherche et commande de pièces spécifiques pour véhicules français', features: ['Recherche sur mesure', 'Délai garanti', 'Toutes marques', 'Suivi de commande'], popular: false }
 ];
 
-export default async function handler(req, res) {
+export default async function tarifsHandler(req, res) {
   try {
     // CORS helper
     const setCors = () => {

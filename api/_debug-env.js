@@ -13,7 +13,7 @@ function mask(s) {
   return `${str.slice(0,4)}...${str.slice(-4)}`;
 }
 
-export default function handler(req, res) {
+export default function debugEnvHandler(req, res) {
   try { console.log('[debug-env] incoming', { method: req.method, url: req.url }); } catch (e) {}
   setCors(req, res);
   if (req.method === 'OPTIONS') return res.status(204).end();

@@ -8,7 +8,7 @@ function setCors(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
 }
 
-export default async function handler(req, res) {
+export default async function tarifsIdHandler(req, res) {
   try {
     setCors(req, res);
     if (req.method === 'OPTIONS') return res.status(204).end();

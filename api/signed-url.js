@@ -12,7 +12,7 @@ function isSafeStoragePath(p) {
   return /^[a-zA-Z0-9_\-\.\/]+$/.test(p);
 }
 
-export default async function handler(req, res) {
+export default async function signedUrlHandler(req, res) {
   const DEBUG = process.env.DEBUG_API === 'true';
   if (DEBUG) console.log('[signed-url] incoming', { method: req.method, url: req.url, headers: req.headers });
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });

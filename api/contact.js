@@ -25,7 +25,7 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || proce
 
 let supabaseAdmin = null;
 
-export default async function handler(req, res) {
+export default async function contactHandler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   try {
     // lazy init supabase admin client

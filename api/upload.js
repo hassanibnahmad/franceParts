@@ -10,7 +10,7 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || proce
 let supabase = null;
 
 // Unified upload handler: supports JSON base64 payloads and multipart/form-data
-export default async function handler(req, res) {
+export default async function uploadHandler(req, res) {
 // eslint-disable-line
 
   // CORS helper (respond to preflight and attach headers to responses)
