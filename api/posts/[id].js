@@ -22,10 +22,12 @@ export default async function postsIdHandler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-upload-token, x-upload-secret');
   res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,DELETE,OPTIONS');
+  // prevent CDN from serving a cached SPA index.html for this API route
+  res.setHeader('Cache-Control', 'no-store, max-age=0');
   if (req.method === 'OPTIONS') return res.status(204).end();
 
   // lightweight log to make sure Vercel shows us when this function runs
-  try { console.log('[postsId] incoming', { method: req.method, url: req.url, headers: { cookie: !!req.headers.cookie } }); } catch (e) {}
+  try { console.log('[postsId] incoming', { method: req.method, url: req.url, headers: { cookie: !!req.headers.cookie }, marker: 'postsId-v1' }); } catch (e) {}
 
   // lazy init supabase
   if (!supabase) {
