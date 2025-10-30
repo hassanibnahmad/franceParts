@@ -121,7 +121,44 @@ export default async function postsHandler(req, res) {
 
   try {
     if (req.method === 'POST') {
-      const post = req.body;
+      const post = req.body || {};
+      // Support an action-based POST fallback for environments where
+      // PUT/DELETE to /api/posts/:id may be routed incorrectly by the CDN.
+      // Clients can send { _action: 'update'|'delete', id, ... } as POST to /api/posts
+      if (post._action === 'delete') {
+        const id = post.id;
+        if (!id) return res.status(400).json({ error: 'Missing id for delete' });
+
+        const { data: existing, error: fetchErr } = await supabase.from('blog_posts').select('featured_image').eq('id', id).single();
+        if (fetchErr) return res.status(500).json({ error: fetchErr.message || 'Fetch failed' });
+        const featured = existing && existing.featured_image;
+        if (featured) {
+          const idx = featured.indexOf('/blog-images/');
+          let path = null;
+          if (idx !== -1) path = featured.substring(idx + '/blog-images/'.length);
+          else {
+            const m = featured.match(/\/object\/(?:public|sign)\/[\w-]+\/(.+)$/);
+            if (m) path = m[1];
+          }
+          if (path) {
+            try { const { error: removeErr } = await supabase.storage.from('blog-images').remove([path]); if (removeErr) console.warn('failed to remove image from storage', removeErr); } catch (e) { console.warn('remove image exception', e); }
+          }
+        }
+        const { error } = await supabase.from('blog_posts').delete().eq('id', id);
+        if (error) return res.status(500).json({ error: error.message || 'Delete failed' });
+        return res.status(200).json({ success: true });
+      }
+
+      if (post._action === 'update') {
+        const id = post.id;
+        if (!id) return res.status(400).json({ error: 'Missing id for update' });
+        const updates = { ...post };
+        delete updates.id; delete updates._action;
+        const { data, error } = await supabase.from('blog_posts').update(updates).eq('id', id).select().single();
+        if (error) return res.status(500).json({ error: error.message || 'Update failed' });
+        return res.status(200).json({ data });
+      }
+
       if (!post || !post.title) return res.status(400).json({ error: 'Invalid post payload' });
       // ensure slug exists: generate from title when missing
       if (!post.slug) {

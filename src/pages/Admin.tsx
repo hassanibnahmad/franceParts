@@ -262,7 +262,9 @@ export default function Admin() {
       if (uploadToken) headers['x-upload-token'] = uploadToken;
 
       if (editingPost) {
-        const resp = await fetch(`/api/posts/${editingPost.id}`, { method: 'PUT', headers, body: JSON.stringify({ ...post, updated_at: new Date().toISOString() }), credentials: 'include' });
+        // Fallback: send update as POST with _action when PUT may be blocked by CDN/routing
+        const payload = { _action: 'update', id: editingPost.id, ...post, updated_at: new Date().toISOString() };
+        const resp = await fetch('/api/posts', { method: 'POST', headers, body: JSON.stringify(payload), credentials: 'include' });
         if (!resp.ok) throw new Error((await resp.json().catch(() => ({}))).error || 'Update failed');
         push({ type: 'success', message: 'Article mis à jour.' });
       } else {
@@ -283,7 +285,8 @@ export default function Admin() {
       try {
         const headers: Record<string, string> = { 'Content-Type': 'application/json' };
         if (uploadToken) headers['x-upload-token'] = uploadToken;
-  const resp = await fetch(`/api/posts/${id}`, { method: 'DELETE', headers, credentials: 'include' });
+  // Fallback: use POST with _action to delete when DELETE is blocked by CDN/routing
+        const resp = await fetch('/api/posts', { method: 'POST', headers, body: JSON.stringify({ _action: 'delete', id }), credentials: 'include' });
         if (!resp.ok) throw new Error((await resp.json().catch(() => ({}))).error || 'Delete failed');
         fetchPosts();
         push({ type: 'success', message: 'Article supprimé.' });
