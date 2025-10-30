@@ -7,6 +7,7 @@ export default function Blog() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [imageMap, setImageMap] = useState<Record<string, string>>({}); // postId -> url
+  const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({}); // postId -> loaded
   const [categoryFilter, setCategoryFilter] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -58,6 +59,9 @@ export default function Blog() {
 
     if (Object.keys(newMap).length > 0) setImageMap(prev => ({ ...prev, ...newMap }));
   };
+
+  const markImageLoaded = (id: string) => setLoadedImages(prev => (prev[id] ? prev : { ...prev, [id]: true }));
+  const markImageErrored = (id: string) => setLoadedImages(prev => (prev[id] ? prev : { ...prev, [id]: true }));
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('fr-FR', {
@@ -111,8 +115,18 @@ export default function Blog() {
           </div>
         </div>
         {loading ? (
-          <div className="text-center py-20">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-yellow-500 border-t-transparent"></div>
+          // Skeleton grid while loading posts and images
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="bg-gray-800 rounded-xl shadow-xl overflow-hidden">
+                <div className="h-48 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-pulse" />
+                <div className="p-6">
+                  <div className="h-4 bg-gray-700 rounded w-3/4 mb-3 animate-pulse" />
+                  <div className="h-3 bg-gray-700 rounded w-1/2 mb-4 animate-pulse" />
+                  <div className="h-3 bg-gray-700 rounded w-2/3 mb-2 animate-pulse" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : posts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -124,24 +138,38 @@ export default function Blog() {
                 .replace(/-+/g, '-'));
               const slugPart = post.slug ? post.slug : makeSlug(post.title);
 
+              const imgSrc = (imageMap[String(post.id)] ?? ((post as any).featured_image || (post as any).cover_image)) as string | undefined;
+              const hasImage = !!imgSrc && /^https?:\/\//i.test(String(imgSrc));
+              const isLoaded = Boolean(loadedImages[String(post.id)]) || !hasImage;
+
               return (
                 <article
                   key={post.id}
-                  className="bg-gray-800 rounded-xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group"
+                  className={`bg-gray-800 rounded-xl shadow-xl overflow-hidden transition-all duration-500 transform ${isLoaded ? 'opacity-100 translate-y-0 shadow-2xl' : 'opacity-0 translate-y-4'} group`}
+                  aria-hidden={!isLoaded}
                 >
                   {/* Render image only when we have a usable URL: either a signed URL
                       resolved into imageMap, or an absolute http(s) URL already stored
                       in the post. If the DB stores a storage path (e.g. "blog-images/...")
                       we wait for the signed-url resolver to populate imageMap; this
                       avoids showing broken image icons for raw storage paths. */}
-                  {((imageMap[String(post.id)] ?? null) || (/^https?:\/\//i.test(String((post as any).featured_image || (post as any).cover_image)))) && (
-                    <div className="h-48 overflow-hidden">
+                  {hasImage ? (
+                    <div className="h-48 overflow-hidden bg-gray-900 flex items-center justify-center">
+                      {/* skeleton until loaded */}
+                      {!isLoaded && (
+                        <div className="w-full h-full bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-pulse" />
+                      )}
                       <img
-                        src={imageMap[String(post.id)] ?? ((post as any).featured_image || (post as any).cover_image)}
+                        src={imgSrc}
                         alt={post.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        onLoad={() => markImageLoaded(String(post.id))}
+                        onError={() => markImageErrored(String(post.id))}
+                        className={`w-full h-full object-cover ${isLoaded ? 'group-hover:scale-110 transition-transform duration-500' : 'hidden'}`}
                       />
                     </div>
+                  ) : (
+                    // no image: keep the card visible immediately with a subtle header
+                    <div className="h-48 bg-gray-800" />
                   )}
                   <div className="p-6">
                     <div className="flex items-center space-x-4 text-sm text-gray-500 mb-4">
