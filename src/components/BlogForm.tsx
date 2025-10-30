@@ -24,7 +24,8 @@ export default function BlogForm({ initial, onCancel, onSave, submitLabel, uploa
   const [featuredImageUrl] = useState(init.featured_image ?? '');
   // Author is fixed for all posts
   const [author] = useState('FranceParts Team');
-  const [published, setPublished] = useState(!!init.published);
+  // Default new posts to public (true) but preserve existing post value when editing
+  const [published, setPublished] = useState(init.published === undefined ? true : !!init.published);
   const [category, setCategory] = useState((init as any).category ?? '');
 
   const [file, setFile] = useState<File | null>(null);

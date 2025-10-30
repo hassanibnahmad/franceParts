@@ -1,3 +1,5 @@
+// runtime fetch fixes (monkey-patch) to handle legacy PUT/DELETE -> POST _action fallback
+import './lib/fetchFixes';
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'

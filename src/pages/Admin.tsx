@@ -298,11 +298,13 @@ export default function Admin() {
 
   const togglePublished = async (post: BlogPost) => {
     try {
+      // Use POST _action fallback (PUT can be rewritten/blocked by CDN) so toggle works reliably
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (uploadToken) headers['x-upload-token'] = uploadToken;
-      const resp = await fetch(`/api/posts/${post.id}`, { method: 'PUT', headers, body: JSON.stringify({ published: !post.published }), credentials: 'include' });
+      const payload = { _action: 'update', id: post.id, published: !post.published, updated_at: new Date().toISOString() };
+      const resp = await fetch('/api/posts', { method: 'POST', headers, body: JSON.stringify(payload), credentials: 'include' });
       if (!resp.ok) throw new Error((await resp.json().catch(() => ({}))).error || 'Update failed');
-      fetchPosts();
+      await fetchPosts();
     } catch (e) { console.error(e); }
   };
 
