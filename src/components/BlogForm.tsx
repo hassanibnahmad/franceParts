@@ -552,10 +552,19 @@ export default function BlogForm({ initial, onCancel, onSave, submitLabel, uploa
           // prefer storing the storage path in the DB when available for consistency; otherwise store a usable URL
           if (res?.path) imageUrl = res.path;
           else if (res?.url) imageUrl = res.url;
+          // If upload returned neither a path nor a url, treat as failure
+          if (!imageUrl) {
+            console.error('upload-to-server returned empty path/url', res);
+            push({ type: 'error', message: 'Échec de l\'upload de l\'image. Aucun chemin de stockage reçu.' });
+            setSubmitting(false);
+            return;
+          }
         } catch (err: any) {
           // Log technical details to console for debugging, show a generic toast to the user
           console.error('upload-to-server error', err);
           push({ type: 'error', message: 'Échec de l\'upload de l\'image. Vérifiez le serveur.' });
+          setSubmitting(false);
+          return;
         }
       } else {
         // If preview is an external http URL, use it directly (no upload needed)
