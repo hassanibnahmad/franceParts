@@ -105,7 +105,28 @@ export default async function tarifsHandler(req, res) {
         } catch (e) { console.error('seed error', e); return res.status(500).json({ error: 'Seed failed' }); }
       }
 
-      const payload = req.body;
+      const payload = req.body || {};
+
+      // Support action-style POSTs for update/delete (fallback when PUT/DELETE are blocked)
+      if (payload._action === 'delete') {
+        const id = payload.id;
+        if (!id) return res.status(400).json({ error: 'Missing id for delete' });
+        const { error } = await supabase.from('tarifs').delete().eq('id', id);
+        if (error) { console.error('supabase delete tarifs error', error); return res.status(500).json({ error: error.message || 'Delete failed' }); }
+        return res.status(200).json({ success: true });
+      }
+
+      if (payload._action === 'update') {
+        const id = payload.id;
+        if (!id) return res.status(400).json({ error: 'Missing id for update' });
+        const updates = { ...payload };
+        delete updates.id; delete updates._action;
+        const { data, error } = await supabase.from('tarifs').update(updates).eq('id', id).select().single();
+        if (error) { console.error('supabase update tarifs error', error); return res.status(500).json({ error: error.message || 'Update failed' }); }
+        return res.status(200).json({ data });
+      }
+
+      // Default: create new tarif
       if (!payload || !payload.service) return res.status(400).json({ error: 'Invalid payload' });
       const toInsert = { service: payload.service, price: payload.price || '', description: payload.description || '', features: payload.features || [], popular: !!payload.popular };
       const { data, error } = await supabase.from('tarifs').insert([toInsert]).select().single();
