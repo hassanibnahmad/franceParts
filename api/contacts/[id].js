@@ -46,15 +46,26 @@ function idFromUrl(req) {
 }
 
 export default async function contactsIdHandler(req, res) {
-  if (req.method !== 'DELETE') return res.status(405).json({ error: 'Method not allowed' });
+  // Accept DELETE or POST {_action:'delete', id} as a fallback when DELETE is blocked by proxies/CDNs
+  if (req.method !== 'DELETE' && req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   try {
+    const DEBUG = process.env.DEBUG_API === 'true';
+    if (DEBUG) console.log('[contacts.id] incoming', { method: req.method, url: req.url, headers: req.headers, body: req.body });
+
     const cookies = parseCookies(req);
     const token = cookies.admin_session;
     const cookieSecret = process.env.COOKIE_SECRET || process.env.UPLOAD_TOKEN_SECRET;
-    const payload = verifyToken(token, cookieSecret);
-    if (!payload) return res.status(401).json({ error: 'unauthorized' });
+    const payloadToken = verifyToken(token, cookieSecret);
+    if (!payloadToken) return res.status(401).json({ error: 'unauthorized' });
 
-    const id = idFromUrl(req) || (req.query && req.query.id) || null;
+    // Determine id: support URL param or action-style body
+    let id = idFromUrl(req) || (req.query && req.query.id) || null;
+    if (req.method === 'POST') {
+      const body = req.body || {};
+      if (body._action !== 'delete') return res.status(405).json({ error: 'Method not allowed' });
+      if (!id && body.id) id = body.id;
+    }
+
     if (!id) return res.status(400).json({ error: 'missing_id' });
 
     // lazy-init supabase admin client
@@ -67,7 +78,7 @@ export default async function contactsIdHandler(req, res) {
     }
 
     const { error } = await supabaseAdmin.from('contacts').delete().eq('id', id);
-    if (error) { console.error('supabase delete error', error); return res.status(500).json({ error: 'internal' }); }
+    if (error) { console.error('supabase delete error', error); return res.status(500).json({ error: 'internal', details: (DEBUG ? error : undefined) }); }
     return res.json({ ok: true });
   } catch (err) {
     console.error('contacts delete error', err);
