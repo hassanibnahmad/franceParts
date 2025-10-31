@@ -119,11 +119,26 @@ export default async function tarifsHandler(req, res) {
       if (payload._action === 'update') {
         const id = payload.id;
         if (!id) return res.status(400).json({ error: 'Missing id for update' });
-        const updates = { ...payload };
-        delete updates.id; delete updates._action;
-        const { data, error } = await supabase.from('tarifs').update(updates).eq('id', id).select().single();
-        if (error) { console.error('supabase update tarifs error', error); return res.status(500).json({ error: error.message || 'Update failed' }); }
-        return res.status(200).json({ data });
+
+        // Whitelist allowed columns to avoid sending unexpected keys to Supabase
+        const allowed = ['service', 'price', 'description', 'features', 'popular', 'created_at', 'updated_at'];
+        const updates = {};
+        for (const k of allowed) {
+          if (Object.prototype.hasOwnProperty.call(payload, k)) updates[k] = payload[k];
+        }
+
+        try {
+          if (DEBUG) console.log('[tarifs] update request', { id, payload, updates });
+          const { data, error } = await supabase.from('tarifs').update(updates).eq('id', id).select().single();
+          if (error) {
+            console.error('supabase update tarifs error', error);
+            return res.status(500).json({ error: error.message || 'Update failed', details: (DEBUG ? error : undefined) });
+          }
+          return res.status(200).json({ data });
+        } catch (e) {
+          console.error('tarifs update exception', e);
+          return res.status(500).json({ error: e && e.message ? e.message : 'Update exception', details: (DEBUG ? e : undefined) });
+        }
       }
 
       // Default: create new tarif
