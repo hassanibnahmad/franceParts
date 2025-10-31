@@ -154,8 +154,12 @@ export default function Admin() {
   const deleteContact = (id: string) => {
     openConfirm('Supprimer ce message ?', 'Supprimer le message', async () => {
       try {
-  const resp = await fetch(`/api/contacts/${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'include' });
-        if (!resp.ok) throw new Error('Delete failed');
+        // Use POST {_action:'delete'} fallback because some hosts/CDNs block DELETE requests
+        const resp = await fetch(`/api/contacts/${encodeURIComponent(id)}`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ _action: 'delete', id }) });
+        if (!resp.ok) {
+          // If server indicates method not allowed, throw so confirm modal shows error
+          throw new Error((await resp.json().catch(() => ({}))).error || 'Delete failed');
+        }
         setContacts(prev => prev.filter(c => String(c.id) !== String(id)));
         push({ type: 'success', message: 'Message supprimé.' });
       } catch (e) {
