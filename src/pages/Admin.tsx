@@ -140,10 +140,12 @@ export default function Admin() {
   const [contacts, setContacts] = useState<any[]>([]);
   const fetchContacts = async () => {
     try {
-  const resp = await fetch('/api/contacts', { credentials: 'include' });
+      const resp = await fetch('/api/contacts', { credentials: 'include' });
       if (!resp.ok) throw new Error('Failed to load');
       const json = await resp.json().catch(() => ({}));
-      setContacts(json?.data || []);
+      // API may return { contacts: [...] } or { data: [...] } depending on handler
+      const list = json?.contacts ?? json?.data ?? [];
+      setContacts(list || []);
     } catch (e) { console.error('fetchContacts error', e); setContacts([]); }
   };
 
