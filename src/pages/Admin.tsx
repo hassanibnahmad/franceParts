@@ -411,7 +411,11 @@ export default function Admin() {
         if (uploadToken) headers['x-upload-token'] = uploadToken;
 
         if (editingPricingId) {
-          const resp = await fetch(`/api/tarifs/${encodeURIComponent(editingPricingId)}`, { method: 'PUT', headers, body: JSON.stringify({ service: newItem.service, price: newItem.price, description: newItem.description, features: newItem.features, popular: newItem.popular }) });
+          // Use POST fallback to support environments where PUT is blocked by CDN/rewrites
+          const payload = { _action: 'update', id: editingPricingId, service: newItem.service, price: newItem.price, description: newItem.description, features: newItem.features, popular: newItem.popular, updated_at: new Date().toISOString() };
+          const updHeaders: Record<string,string> = { 'Content-Type': 'application/json' };
+          if (uploadToken) updHeaders['x-upload-token'] = uploadToken;
+          const resp = await fetch('/api/tarifs', { method: 'POST', headers: updHeaders, body: JSON.stringify(payload), credentials: 'include' });
           if (resp.status === 404) {
             push({ type: 'error', message: 'API tarifs indisponible.' });
             return;
@@ -456,7 +460,10 @@ export default function Admin() {
         }
         const headers: Record<string,string> = { 'Content-Type': 'application/json' };
         if (uploadToken) headers['x-upload-token'] = uploadToken;
-          const resp = await fetch(`/api/tarifs/${encodeURIComponent(id)}`, { method: 'DELETE', headers });
+          // Use POST _action fallback for delete to avoid DELETE being blocked
+          const delHeaders: Record<string,string> = { 'Content-Type': 'application/json' };
+          if (uploadToken) delHeaders['x-upload-token'] = uploadToken;
+          const resp = await fetch('/api/tarifs', { method: 'POST', headers: delHeaders, body: JSON.stringify({ _action: 'delete', id }), credentials: 'include' });
           if (resp.status === 404) {
             // endpoint missing — remove locally and consider it success
             setPricingData(prev => prev.filter((_, i) => i !== index));
