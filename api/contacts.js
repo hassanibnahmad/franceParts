@@ -38,16 +38,17 @@ function verifyToken(token, secret) {
 }
 
 export default async function contactsHandler(req, res) {
-  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+  const DEBUG = process.env.DEBUG_API === 'true';
+  if (DEBUG) console.log('[contacts] incoming', { method: req.method, url: req.url, headers: req.headers, body: req.body });
+
+  // Allow GET for listing and POST {_action:'delete', id} as a CDN-safe delete fallback
+  if (req.method !== 'GET' && req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   try {
-    const DEBUG = process.env.DEBUG_API === 'true';
-    if (DEBUG) console.log('[contacts] incoming', { method: req.method, url: req.url, headers: req.headers });
     const cookies = parseCookies(req);
     const token = cookies.admin_session;
     const cookieSecret = process.env.COOKIE_SECRET || process.env.UPLOAD_TOKEN_SECRET;
     const payload = verifyToken(token, cookieSecret);
     if (!payload) return res.status(401).json({ error: 'unauthorized' });
-
     // lazy init supabase
     if (!supabaseAdmin) {
       if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
@@ -55,6 +56,17 @@ export default async function contactsHandler(req, res) {
         return res.status(500).json({ error: 'internal' });
       }
       try { supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY); } catch (e) { console.error('contacts supabase init failed', e); return res.status(500).json({ error: 'internal' }); }
+    }
+
+    if (req.method === 'POST') {
+      // support POST {_action:'delete', id} as a fallback when DELETE is blocked
+      const body = req.body || {};
+      if (body._action !== 'delete') return res.status(405).json({ error: 'Method not allowed' });
+      const id = body.id;
+      if (!id) return res.status(400).json({ error: 'missing_id' });
+      const { error } = await supabaseAdmin.from('contacts').delete().eq('id', id);
+      if (error) { console.error('supabase contacts delete error', error); return res.status(500).json({ error: 'internal' }); }
+      return res.json({ ok: true });
     }
 
     const { data, error } = await supabaseAdmin.from('contacts').select('*').order('created_at', { ascending: false });
