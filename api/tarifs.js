@@ -121,10 +121,22 @@ export default async function tarifsHandler(req, res) {
         if (!id) return res.status(400).json({ error: 'Missing id for update' });
 
         // Whitelist allowed columns to avoid sending unexpected keys to Supabase
-        const allowed = ['service', 'price', 'description', 'features', 'popular', 'created_at', 'updated_at'];
+        // NOTE: do NOT include DB-managed timestamp columns here if they don't exist in the schema
+        const allowed = ['service', 'price', 'description', 'features', 'popular'];
         const updates = {};
         for (const k of allowed) {
           if (Object.prototype.hasOwnProperty.call(payload, k)) updates[k] = payload[k];
+        }
+
+        // If client provided timestamp fields that are omitted, optionally log for debugging
+        const ignoredTimestamps = [];
+        for (const ts of ['created_at', 'updated_at']) {
+          if (Object.prototype.hasOwnProperty.call(payload, ts)) ignoredTimestamps.push(ts);
+        }
+        if (ignoredTimestamps.length && DEBUG) console.log('[tarifs] ignored timestamp fields from payload', ignoredTimestamps);
+
+        if (Object.keys(updates).length === 0) {
+          return res.status(400).json({ error: 'No valid fields to update. Allowed: service, price, description, features, popular' });
         }
 
         try {
