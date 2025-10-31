@@ -69,6 +69,25 @@ export default async function contactsHandler(req, res) {
       return res.json({ ok: true });
     }
 
+    // Also support deletion via GET query parameter: /api/contacts?_action=delete&id=...
+    // This helps when non-GET methods are rewritten or blocked by a CDN/static layer.
+    if (req.method === 'GET') {
+      try {
+        const u = new URL(req.url, 'http://localhost');
+        const action = u.searchParams.get('_action') || u.searchParams.get('action');
+        const qid = u.searchParams.get('id');
+        if (action === 'delete') {
+          if (!qid) return res.status(400).json({ error: 'missing_id' });
+          const { error } = await supabaseAdmin.from('contacts').delete().eq('id', qid);
+          if (error) { console.error('supabase contacts delete error (GET)', error); return res.status(500).json({ error: 'internal' }); }
+          return res.json({ ok: true });
+        }
+      } catch (e) {
+        console.error('contacts GET-delete parse error', e);
+        // fall through to normal listing
+      }
+    }
+
     const { data, error } = await supabaseAdmin.from('contacts').select('*').order('created_at', { ascending: false });
     if (error) { console.error('supabase contacts fetch error', error); return res.status(500).json({ error: 'internal' }); }
     return res.json({ ok: true, contacts: data || [] });
