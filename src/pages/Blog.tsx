@@ -28,36 +28,79 @@ export default function Blog() {
     if (searchQuery) opts.q = searchQuery;
     const data = await listPosts(opts);
     setPosts(data);
-    // Resolve any storage-path featured_image values to signed URLs
-    resolveSignedUrls(data);
+    // Resolve any storage-path featured_image values to signed URLs and
+    // preload images. Wait for those to finish before turning off the
+    // page-level `loading` flag so the skeleton stays visible until
+    // posts AND images are ready.
+    try {
+      await resolveSignedUrls(data);
+    } catch (e) {
+      // swallow errors here but still proceed to hide skeleton so app
+      // doesn't block indefinitely
+    }
     setLoading(false);
   };
 
+  // Resolve storage-path image values to signed URLs and preload images.
+  // Returns when imageMap is populated and all image preloads have settled.
   const resolveSignedUrls = async (items: BlogPost[]) => {
     if (!items || items.length === 0) return;
     const toFetch: { id: string; path: string }[] = [];
     for (const p of items) {
-      // support either `featured_image` or legacy `cover_image`
       const fv = (p as any).featured_image || (p as any).cover_image;
       if (!fv) continue;
-      // Heuristic: if it doesn't look like an http(s) url, treat as storage path
       if (!/^https?:\/\//i.test(fv)) {
         toFetch.push({ id: String(p.id), path: fv });
       }
     }
-    if (toFetch.length === 0) return;
 
     const newMap: Record<string, string> = {};
-    await Promise.all(toFetch.map(async (t) => {
-      try {
-        const resp = await fetch('/api/signed-url', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: t.path, expires: 60 * 60 }) });
-        if (!resp.ok) return;
-        const json = await resp.json().catch(() => ({}));
-        if (json?.signedUrl) newMap[t.id] = json.signedUrl;
-      } catch (e) { /* ignore per-item error */ }
-    }));
+    if (toFetch.length > 0) {
+      await Promise.all(toFetch.map(async (t) => {
+        try {
+          const resp = await fetch('/api/signed-url', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: t.path, expires: 60 * 60 }) });
+          if (!resp.ok) return;
+          const json = await resp.json().catch(() => ({}));
+          if (json?.signedUrl) newMap[t.id] = json.signedUrl;
+        } catch (e) { /* ignore per-item error */ }
+      }));
 
-    if (Object.keys(newMap).length > 0) setImageMap(prev => ({ ...prev, ...newMap }));
+      if (Object.keys(newMap).length > 0) setImageMap(prev => ({ ...prev, ...newMap }));
+    }
+
+    // Build list of final image URLs for posts (either absolute URLs already
+    // present on the post, or signed URLs resolved above). Preload those
+    // images so the UI can show them immediately when we render the posts.
+    const preloadList: { id: string; url: string }[] = [];
+    for (const p of items) {
+      const id = String(p.id);
+      const raw = (p as any).featured_image || (p as any).cover_image;
+      if (!raw) continue;
+      let finalUrl: string | undefined;
+      if (/^https?:\/\//i.test(raw)) finalUrl = raw;
+      else if (newMap[id]) finalUrl = newMap[id];
+      else if (imageMap[id]) finalUrl = imageMap[id];
+      if (finalUrl) preloadList.push({ id, url: finalUrl });
+    }
+
+    // Preload images in parallel and mark them loaded when settled. We
+    // swallow errors per-image but still consider them 'loaded' so the
+    // skeleton doesn't spin forever.
+    await Promise.all(preloadList.map(({ id, url }) => new Promise<void>((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        markImageLoaded(id);
+        resolve();
+      };
+      img.onerror = () => {
+        markImageErrored(id);
+        resolve();
+      };
+      // assign src last to start loading
+      img.src = url;
+      // safety: if browser cached it and onload already fired synchronously
+      // above handlers will still run.
+    })));
   };
 
   const markImageLoaded = (id: string) => setLoadedImages(prev => (prev[id] ? prev : { ...prev, [id]: true }));
@@ -117,7 +160,7 @@ export default function Blog() {
         {loading ? (
           // Skeleton grid while loading posts and images
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {Array.from({ length: 6 }).map((_, i) => (
+            {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="bg-gray-900 rounded-xl shadow-xl overflow-hidden">
                 <div className="h-48 bg-gradient-to-r from-black via-gray-900 to-gray-800 animate-pulse" />
                 <div className="p-6">

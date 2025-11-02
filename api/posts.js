@@ -50,6 +50,28 @@ export default async function postsHandler(req, res) {
     }
   }
 
+  // helper: try to extract storage path inside 'blog-images' bucket from
+  // a stored URL or signed URL. Returns the path relative to the bucket or
+  // null when it can't be determined.
+  const extractStoragePath = (featured) => {
+    if (!featured) return null;
+    try {
+      const idx = String(featured).indexOf('/blog-images/');
+      if (idx !== -1) return String(featured).substring(idx + '/blog-images/'.length);
+      const m = String(featured).match(/\/object\/(?:public|sign)\/[\w-]+\/(.+)$/);
+      if (m) return m[1];
+    } catch (e) { /* ignore */ }
+    return null;
+  };
+
+  const removeStoragePath = async (path) => {
+    if (!path) return;
+    try {
+      const { error: removeErr } = await supabase.storage.from('blog-images').remove([path]);
+      if (removeErr) console.warn('failed to remove image from storage', removeErr);
+    } catch (e) { console.warn('remove image exception', e); }
+  };
+
   // Basic protection: require upload secret when set
   const expected = process.env.UPLOAD_SECRET;
   const tokenSecret = process.env.UPLOAD_TOKEN_SECRET;
@@ -154,6 +176,24 @@ export default async function postsHandler(req, res) {
         if (!id) return res.status(400).json({ error: 'Missing id for update' });
         const updates = { ...post };
         delete updates.id; delete updates._action;
+
+        // if the featured_image is changing, attempt to remove the old image
+        try {
+          const { data: existing, error: fetchErr } = await supabase.from('blog_posts').select('featured_image').eq('id', id).single();
+          if (fetchErr) {
+            return res.status(500).json({ error: fetchErr.message || 'Fetch failed' });
+          }
+          const oldFeatured = existing && existing.featured_image;
+          const newFeatured = updates.featured_image;
+          if (typeof newFeatured !== 'undefined' && newFeatured !== oldFeatured) {
+            const path = extractStoragePath(oldFeatured);
+            if (path) await removeStoragePath(path);
+          }
+        } catch (e) {
+          // don't block update purely because cleanup failed
+          console.warn('error while cleaning up old image on update', e);
+        }
+
         const { data, error } = await supabase.from('blog_posts').update(updates).eq('id', id).select().single();
         if (error) return res.status(500).json({ error: error.message || 'Update failed' });
         return res.status(200).json({ data });
@@ -187,6 +227,25 @@ export default async function postsHandler(req, res) {
       if (!id) return res.status(400).json({ error: 'Missing id in URL or body' });
       const updates = req.body;
       delete updates.id;
+
+      // If featured_image is provided and different from the stored value,
+      // remove the old stored image from the bucket.
+      try {
+        if (Object.prototype.hasOwnProperty.call(updates, 'featured_image')) {
+          const { data: existing, error: fetchErr } = await supabase.from('blog_posts').select('featured_image').eq('id', id).single();
+          if (fetchErr) {
+            console.error('supabase fetch before update error', fetchErr);
+          } else {
+            const oldFeatured = existing && existing.featured_image;
+            const newFeatured = updates.featured_image;
+            if (typeof newFeatured !== 'undefined' && newFeatured !== oldFeatured) {
+              const path = extractStoragePath(oldFeatured);
+              if (path) await removeStoragePath(path);
+            }
+          }
+        }
+      } catch (e) { console.warn('error during pre-update image cleanup', e); }
+
       const { data, error } = await supabase.from('blog_posts').update(updates).eq('id', id).select().single();
       if (error) { console.error('supabase update error', error); return res.status(500).json({ error: error.message || 'Update failed' }); }
       return res.status(200).json({ data });

@@ -99,24 +99,7 @@ export default function AdminReset() {
   if (!emailRe.test(email)) { push({ type: 'error', message: 'Adresse email invalide' }); setEmailValid(false); emailRef.current?.focus(); return; }
     setSending(true);
     try {
-      // First verify the email exists for an admin to avoid sending and showing false success
-      const checkResp = await fetch('/api/admin-check-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      if (checkResp.status === 404) {
-        push({ type: 'error', message: "Aucun compte administrateur n'est associé à cette adresse." });
-        setEmailValid(false);
-        emailRef.current?.focus();
-        setSending(false);
-        return;
-      }
-      if (!checkResp.ok) {
-        push({ type: 'error', message: 'Erreur lors de la vérification de l\'email' });
-        setSending(false);
-        return;
-      }
+      // Directly request a reset; the server returns 404 if no admin exists for that email.
       const resp = await fetch('/api/admin-request-reset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
