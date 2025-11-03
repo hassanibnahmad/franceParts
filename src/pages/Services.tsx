@@ -1,7 +1,9 @@
 import { Car, Cog, Package } from 'lucide-react';
 import Accordion from '../components/Accordion';
+import { useSeo } from '../lib/seo';
 
 export default function Services() {
+  useSeo('France Parts | Services — Pièces auto neuves et d\'occasion en Saint Gilles, Bruxelles, Belgique', 'Solutions complètes : vente de véhicules français, pièces neuves et d\'occasion, commande sur-mesure et livraison rapide.');
   const faqItems = [
     {
       question: "Quels types de véhicules français proposez-vous à la vente ?",

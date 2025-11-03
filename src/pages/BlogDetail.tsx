@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSeo } from '../lib/seo';
 import { Calendar, User } from 'lucide-react';
 import { getPostBySlug } from '../lib/blogs';
 import type { BlogPost } from '../lib/blogs';
@@ -42,6 +43,12 @@ export default function BlogDetail({ slug }: { slug: string }) {
 
     fetchPost();
   }, [slug]);
+
+  // Update page title/description based on loaded post
+  useSeo(
+    post ? `${post.title} — France Parts` : 'France Parts | Article — Blog',
+    post ? (post.excerpt || `${post.title} - Découvrez cet article sur France Parts.`) : 'Articles et conseils sur l\'entretien automobile, pièces et promotions.'
+  );
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('fr-FR', {

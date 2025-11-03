@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- This sitemap index points to the dynamic sitemap endpoint at /api/sitemap.xml.
+       Search engines will fetch /sitemap.xml from the site root; the loc below is
+       intentionally relative so it works on most hosts. For the best results replace
+       the loc with your absolute site URL (e.g. https://example.com/api/sitemap.xml). -->
+  <sitemap>
+    <loc>https://www.franceparts.be/api/sitemap.xml</loc>
+  </sitemap>
+</sitemapindex>

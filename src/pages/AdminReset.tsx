@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { useSeo } from '../lib/seo';
 import { useToasts } from '../components/Toast';
 import { ArrowLeft } from 'lucide-react';
 
@@ -7,6 +8,7 @@ function useQuery() {
 }
 
 export default function AdminReset() {
+  useSeo('France Parts | Réinitialisation du mot de passe', 'Réinitialisation du mot de passe administrateur pour France Parts. Suivez les instructions envoyées par email.');
   const q = useQuery();
   const [email, setEmail] = useState(q.get('email') || '');
   const [token, setToken] = useState(q.get('token') || '');

@@ -147,7 +147,7 @@ app.get('/api/_preview-reset-email', (req, res) => {
       <div style="margin-top:14px;font-size:13px;color:#374151;">Cordialement,<br>L'équipe <strong>${site_name}</strong></div>
     </div>
 
-    <div class="footer">Besoin d'aide ? Contactez-nous : <a href="mailto:${support_email}" style="color:#2563eb;">${support_email}</a></div>
+    
   </div>
 </body>
 </html>`;

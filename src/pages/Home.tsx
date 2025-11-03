@@ -8,12 +8,14 @@ import {
   Star,
 } from "lucide-react";
 import Accordion from '../components/Accordion';
+import { useSeo } from '../lib/seo';
 import { useState } from "react";
 import logoImg from '../assets/logo.png';
 import carBg from '../assets/car2.png';
 import magasin2 from '../assets/magasin2.png';
 
 export default function Home() {
+  useSeo('France Parts | Pièces auto neuves et d\'occasion en Saint Gilles, Bruxelles, Belgique', 'France Parts, votre spécialiste en vente et achat de pièces automobiles neuves et d\'occasion. Livraison rapide et garantie.');
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
 
   const testimonials = [

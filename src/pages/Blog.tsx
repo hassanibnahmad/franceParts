@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useSeo } from '../lib/seo';
 import { Calendar, User, ArrowRight } from 'lucide-react';
 import { listPosts } from '../lib/blogs';
 import type { BlogPost } from '../lib/blogs';
 
 export default function Blog() {
+  useSeo('France Parts | Blog — Actualités et conseils auto', 'Actualités, guides et conseils pour l\'entretien et la réparation de véhicules français ; retrouvez nos articles et promotions.');
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [imageMap, setImageMap] = useState<Record<string, string>>({}); // postId -> url

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useSeo } from '../lib/seo';
 import { createPortal } from 'react-dom';
 import { useToasts } from '../components/Toast';
 import type { BlogPost } from '../lib/supabase';
@@ -80,6 +81,7 @@ function ModalPortal({ name, onClose,  children }: any) {
 }
 
 export default function Admin() {
+  useSeo('France Parts | Espace Admin', 'Espace administrateur — gestion des articles, contacts, tarifs et contenu du site.');
   // simple auth gate
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [uploadToken, setUploadToken] = useState<string | null>(null);

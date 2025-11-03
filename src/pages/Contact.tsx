@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { MapPin, Phone, Mail, Send } from "lucide-react";
+import { useSeo } from '../lib/seo';
 
 export default function Contact() {
+  useSeo('France Parts | Contact — Pièces auto neuves et d\'occasion en Saint Gilles, Bruxelles, Belgique', 'Contactez France Parts pour toute demande de pièces neuves ou d\'occasion, devis personnalisé et support.');
   const [formData, setFormData] = useState({
     nom: "",
     email: "",

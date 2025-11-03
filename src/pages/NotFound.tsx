@@ -2,8 +2,10 @@
 import logo from "../assets/logo.png";
 import img404 from "../assets/404.png";
 import { Home, ArrowLeft } from "lucide-react";
+import { useSeo } from '../lib/seo';
 
 export default function NotFound() {
+  useSeo('France Parts | Page introuvable', 'Page 404 — France Parts. Retournez à l\'accueil ou utilisez la navigation pour trouver nos pièces et services.');
   return (
     <main role="main" className="min-h-screen flex items-start justify-center bg-black text-white px-4 py-12 pt-20 relative overflow-hidden">
       {/* Background image (soft, behind content) */}

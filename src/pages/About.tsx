@@ -1,6 +1,8 @@
 import {Target, Award, Heart } from 'lucide-react';
 import magasin2 from '../assets/magasin2.png';
+import { useSeo } from '../lib/seo';
 export default function About() {
+  useSeo('France Parts | À propos — Pièces auto neuves et d\'occasion', 'France Parts, spécialiste en pièces automobiles neuves et d\'occasion en Saint Gilles, Bruxelles, Belgique. Découvrez notre histoire, nos valeurs et notre engagement qualité.');
   const values = [
     {
       icon: <Target className="w-8 h-8" />,

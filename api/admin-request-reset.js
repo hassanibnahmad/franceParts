@@ -110,7 +110,6 @@ export default async function handler(req, res) {
               <p class="link-fallback">Ce lien expirera dans <strong>10 minutes</strong>.<br />If the button doesn't work, copy-paste this link into your browser:<br /><a href="${resetLink}" target="_blank" style="color:#ffd43b">${resetLink}</a></p>
               <p style="margin-top:18px;font-size:14px;color:#cfe3ff">Cordialement,<br/>L’équipe <strong>${site_name}</strong></p>
             </div>
-            <div class="footer">Besoin d’aide ? Contactez-nous : <a href="mailto:${support_email}">${support_email}</a></div>
           </div>
         </body>
         </html>`;

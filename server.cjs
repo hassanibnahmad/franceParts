@@ -181,17 +181,16 @@ app.post('/api/admin-request-reset', async (req, res) => {
         <div class="email-header">
           <div class="brand">${site_name}</div>
         </div>
-        <div class="email-body">
+          <div class="email-body">
           <h1>Réinitialisation de votre mot de passe</h1>
           <p>${greeting}</p>
           <p>Nous avons reçu une demande de réinitialisation du mot de passe pour votre compte <strong>${site_name}</strong>.</p>
-            <div class="footer">Besoin d’aide ? Contactez-nous : <a href="mailto:${escapeHtml(support_email)}">${escapeHtml(support_email)}</a></div>
           <p><a href="${resetLink}" target="_blank" rel="noopener" class="button">Réinitialiser mon mot de passe</a></p>
           <p class="link-fallback">Ce lien expirera dans <strong>${expires_in_minutes} minutes</strong>.<br>If the button doesn't work, copy-paste this link into your browser:<br><a href="${resetLink}" target="_blank" style="color:#ffd43b">${resetLink}</a></p>
           <p style="font-size:13px;color:#9fb3d9;">Si vous n'êtes pas à l'origine de cette demande, ignorez simplement cet e-mail ou contactez notre support.</p>
           <p style="margin-top:18px;font-size:14px;color:#cfe3ff">Cordialement,<br>L’équipe <strong>${site_name}</strong></p>
         </div>
-        <div class="footer">Besoin d’aide ? Contactez-nous : <a href="mailto:${support_email}">${support_email}</a></div>
+        
       </div>
     </body>
     </html>`;
@@ -538,6 +537,18 @@ app.delete('/api/posts/:id', async (req, res) => {
   }
 });
 
+// Delegate sitemap route to in-repo handler (development convenience)
+app.get('/api/sitemap.xml', async (req, res) => {
+  try {
+    const mod = await import(esmModuleUrl('api/sitemap.xml.js'));
+    if (mod && typeof mod.default === 'function') return await mod.default(req, res);
+    return res.status(500).json({ error: 'sitemap handler not available' });
+  } catch (err) {
+    console.error('delegate /api/sitemap.xml failed', err);
+    return res.status(500).json({ error: 'delegate_failed' });
+  }
+});
+
 // Preview route to view the reset email HTML without sending it
 app.get('/api/_preview-reset-email', (req, res) => {
   const email = req.query.email || 'user@example.com';
@@ -651,9 +662,7 @@ const htmlContent = `<!doctype html>
       </p>
       <p style="margin-top:20px;font-size:14px;color:#374151;">Cordialement,<br>L’équipe <strong>${site_name}</strong></p>
     </div>
-    <div class="footer">
-      Besoin d’aide ? Contactez-nous : <a href="mailto:${support_email}">${support_email}</a>
-    </div>
+  
   </div>
 </body>
 </html>`;

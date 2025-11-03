@@ -1,5 +1,6 @@
 import { Check } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useSeo } from '../lib/seo';
 import { supabase } from '../lib/supabase';
 
 type PricingItem = {
@@ -11,6 +12,7 @@ type PricingItem = {
 };
 
 export default function Pricing() {
+  useSeo('France Parts | Tarifs & Offres — Pièces auto neuves et d\'occasion', 'Consultez nos tarifs compétitifs pour pièces neuves et d\'occasion, services et commandes sur-mesure. Demandez un devis en ligne.');
   // pricing data (read-only on public page). Fetch from Supabase table `tarifs`.
   // Pricing is read from the secure server endpoint /api/tarifs.
   const [pricingData, setPricingData] = useState<PricingItem[]>([]);
