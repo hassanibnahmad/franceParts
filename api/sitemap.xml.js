@@ -19,7 +19,16 @@ export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).end();
 
   // derive origin (absolute URLs are preferred in sitemaps)
-  const origin = process.env.SITE_URL || process.env.DEV_SITE_ORIGIN || `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;
+  // Prefer explicit SITE_URL (production). As a fallback, derive from request headers.
+  // Do NOT default to a dev localhost URL here because that would leak local URLs into
+  // production sitemaps (search consoles will reject those entries).
+  let origin = process.env.SITE_URL || `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;
+
+  // Defensive normalization: if SITE_URL is not set but origin points to localhost
+  // and SITE_URL exists in environment (e.g., set after deploy), prefer that.
+  if (origin && origin.includes('localhost') && process.env.SITE_URL) {
+    origin = process.env.SITE_URL;
+  }
 
   // static public pages to include in the sitemap
   const staticPaths = [
