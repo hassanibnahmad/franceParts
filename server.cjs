@@ -10,8 +10,8 @@ const { createClient } = require('@supabase/supabase-js');
 const PORT = process.env.DEV_SERVER_PORT || 3000;
 
 // Preferred origin for constructing absolute URLs in emails / previews.
-// Prefers the front-end dev origin if provided, otherwise falls back to the API server origin.
-const preferredOrigin = process.env.DEV_SITE_ORIGIN || process.env.DEV_SERVER_ORIGIN || `http://localhost:${PORT}`;
+// Prefer an explicit SITE_URL in production, otherwise fall back to dev origins.
+const preferredOrigin = process.env.SITE_URL || process.env.DEV_SITE_ORIGIN || process.env.DEV_SERVER_ORIGIN || 'https://www.franceparts.be';
 
 if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.SUPABASE_URL) {
   console.warn('Warning: SUPABASE_SERVICE_ROLE_KEY or SUPABASE_URL missing. Server will still run but DB ops will fail.');
