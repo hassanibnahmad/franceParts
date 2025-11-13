@@ -156,7 +156,7 @@ export default async function adminHandler(req, res) {
       const smtpHost = process.env.SMTP_HOST; const smtpPort = process.env.SMTP_PORT; const smtpUser = process.env.SMTP_USER; const smtpPass = process.env.SMTP_PASS;
       const site_name = process.env.SITE_NAME || 'FranceParts';
       const support_email = process.env.SUPPORT_EMAIL || process.env.SMTP_FROM || 'support@franceparts.example';
-      const resetLink = `${process.env.DEV_SITE_ORIGIN || 'http://localhost:5173'}/admin/reset?token=${encodeURIComponent(token)}&email=${encodeURIComponent(admin.email)}`;
+      const resetLink = `${process.env.SITE_URL || process.env.DEV_SITE_ORIGIN || 'https://www.franceparts.be'}/admin/reset?token=${encodeURIComponent(token)}&email=${encodeURIComponent(admin.email)}`;
       if (smtpHost && smtpPort && smtpUser && smtpPass) {
         try {
           const transporter = nodemailer.createTransport({ host: smtpHost, port: Number(smtpPort), secure: Number(smtpPort) === 465, auth: { user: smtpUser, pass: smtpPass } });

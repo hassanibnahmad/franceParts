@@ -64,7 +64,7 @@ export default async function handler(req, res) {
     // prepare reset link and email
     const site_name = process.env.SITE_NAME || 'FranceParts';
     const support_email = process.env.SUPPORT_EMAIL || process.env.SMTP_FROM || 'support@franceparts.example';
-    const resetLink = `${process.env.DEV_SITE_ORIGIN || 'http://localhost:5173'}/admin/reset?token=${encodeURIComponent(token)}&email=${encodeURIComponent(admin.email)}`;
+    const resetLink = `${process.env.SITE_URL || process.env.DEV_SITE_ORIGIN || 'https://www.franceparts.be'}/admin/reset?token=${encodeURIComponent(token)}&email=${encodeURIComponent(admin.email)}`;
 
     const smtpHost = process.env.SMTP_HOST;
     const smtpPort = process.env.SMTP_PORT;

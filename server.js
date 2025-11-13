@@ -40,7 +40,7 @@ app.post('/api/admin-request-reset', async (req, res) => {
     const site_name = process.env.SITE_NAME || 'FranceParts';
     const support_email = process.env.SUPPORT_EMAIL || 'support@franceparts.example';
     const expires_in_minutes = 10;
-    const resetLink = `${process.env.DEV_SITE_ORIGIN || 'http://localhost:5173'}/admin/reset?token=${encodeURIComponent(token)}&email=${encodeURIComponent(admin.email)}`;
+    const resetLink = `${process.env.SITE_URL || process.env.DEV_SITE_ORIGIN || 'https://www.franceparts.be'}/admin/reset?token=${encodeURIComponent(token)}&email=${encodeURIComponent(admin.email)}`;
 
     const smtpHost = process.env.SMTP_HOST;
     const smtpPort = process.env.SMTP_PORT;
@@ -92,7 +92,7 @@ app.get('/api/_preview-reset-email', (req, res) => {
   const site_name = process.env.SITE_NAME || 'FranceParts';
   const support_email = process.env.SUPPORT_EMAIL || 'support@franceparts.example';
   const expires_in_minutes = req.query.expires || '10';
-  const resetLink = `${process.env.DEV_SITE_ORIGIN || 'http://localhost:5173'}/admin/reset?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
+  const resetLink = `${process.env.SITE_URL || process.env.DEV_SITE_ORIGIN || 'https://www.franceparts.be'}/admin/reset?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
 
   const html = `<!doctype html>
 <html lang="fr">
