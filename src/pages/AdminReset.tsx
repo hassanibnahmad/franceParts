@@ -23,6 +23,7 @@ export default function AdminReset() {
   const passwordRef = useRef<HTMLInputElement | null>(null);
   const confirmRef = useRef<HTMLInputElement | null>(null);
   const emailRef = useRef<HTMLInputElement | null>(null);
+  const passwordsMatch = (a: string, b: string) => a === b || a.trim() === b.trim();
   // toasts handle auto-dismiss; no local timers needed
 
   useEffect(() => {
@@ -58,7 +59,7 @@ export default function AdminReset() {
       return;
     }
 
-    if (password !== confirmPassword) {
+    if (!passwordsMatch(password, confirmPassword)) {
       push({ type: 'error', message: "Les mots de passe ne correspondent pas." });
       // focus confirm field to help the user
       setConfirmPassword(''); setConfirmTouched(true);
@@ -67,10 +68,12 @@ export default function AdminReset() {
     }
     setLoading(true);
     try {
+      // send a trimmed password to avoid accidental leading/trailing spaces
+      const cleanPassword = password.trim();
       const resp = await fetch('/api/admin-confirm-reset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, token, new_password: password }),
+        body: JSON.stringify({ email, token, new_password: cleanPassword }),
       });
       const data = await resp.json();
       if (!resp.ok) {
@@ -189,18 +192,18 @@ export default function AdminReset() {
               type="password"
               placeholder="Confirmer le mot de passe"
               required
-              className={`w-full px-4 py-3 bg-gray-900 rounded-lg text-gray-100 focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all mb-2 ${confirmTouched && confirmPassword === password ? 'border border-green-400' : confirmTouched ? 'border border-red-500' : 'border border-gray-700'}`}
+              className={`w-full px-4 py-3 bg-gray-900 rounded-lg text-gray-100 focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all mb-2 ${confirmTouched && passwordsMatch(confirmPassword, password) ? 'border border-green-400' : confirmTouched ? 'border border-red-500' : 'border border-gray-700'}`}
             />
-            {confirmTouched && (
-              <div className={`text-sm mb-3 ${confirmPassword === password ? 'text-green-400' : 'text-red-400'}`}>
-                {confirmPassword === password ? 'Les mots de passe correspondent.' : "Les mots de passe ne correspondent pas."}
-              </div>
-            )}
+              {confirmTouched && (
+                <div className={`text-sm mb-3 ${passwordsMatch(confirmPassword, password) ? 'text-green-400' : 'text-red-400'}`}>
+                  {passwordsMatch(confirmPassword, password) ? 'Les mots de passe correspondent.' : "Les mots de passe ne correspondent pas."}
+                </div>
+              )}
 
             <div className="flex gap-3">
               <button
                 type="submit"
-                disabled={loading || !/(?=.*[A-Z])(?=.*\d).{8,}/.test(password) || password !== confirmPassword}
+                disabled={loading || !/(?=.*[A-Z])(?=.*\d).{8,}/.test(password) || !passwordsMatch(password, confirmPassword)}
                 className="bg-yellow-500 text-black px-4 py-2 rounded font-semibold disabled:opacity-50"
               >
                 {loading ? 'En cours...' : 'Valider'}
