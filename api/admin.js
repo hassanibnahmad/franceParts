@@ -62,7 +62,15 @@ export default async function adminHandler(req, res) {
   setCors(req, res);
   if (req.method === 'OPTIONS') return res.status(204).end();
 
-  const path = (req.url || '').replace(/^\/api\/admin/, '') || '';
+  // Normalize the URL path (strip query string) so comparison works in serverless environments
+  const incomingPath = (() => {
+    try {
+      return new URL(req.url, 'http://localhost').pathname;
+    } catch (e) {
+      return String(req.url || '');
+    }
+  })();
+  const path = incomingPath.replace(/^\/api\/admin/, '') || '';
 
   const DEBUG = process.env.DEBUG_API === 'true';
   try {
@@ -83,7 +91,7 @@ export default async function adminHandler(req, res) {
       }
     }
     // POST /api/admin-login
-    if (path === '/-login' || path === '/login' || req.url.endsWith('/admin-login')) {
+    if (path === '/-login' || path === '/login' || incomingPath.endsWith('/admin-login')) {
       if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
       const { email, password } = req.body || {};
       if (!password) return res.status(400).json({ error: 'Missing password' });
@@ -121,7 +129,7 @@ export default async function adminHandler(req, res) {
     }
 
     // POST /api/admin-token
-    if (path === '/-token' || path === '/token' || req.url.endsWith('/admin-token')) {
+    if (path === '/-token' || path === '/token' || incomingPath.endsWith('/admin-token')) {
       if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
       const cookieSecret = process.env.COOKIE_SECRET || process.env.UPLOAD_TOKEN_SECRET;
       if (!cookieSecret) return res.status(500).json({ error: 'Server not configured for sessions' });
@@ -139,7 +147,7 @@ export default async function adminHandler(req, res) {
     }
 
     // POST /api/admin-request-reset
-    if (path === '/-request-reset' || path === '/request-reset' || req.url.endsWith('/admin-request-reset')) {
+    if (path === '/-request-reset' || path === '/request-reset' || incomingPath.endsWith('/admin-request-reset')) {
       if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
       const { email } = req.body || {};
       if (!email) return res.status(400).json({ error: 'Missing email' });
@@ -170,7 +178,7 @@ export default async function adminHandler(req, res) {
     }
 
     // POST /api/admin-confirm-reset
-    if (path === '/-confirm-reset' || path === '/confirm-reset' || req.url.endsWith('/admin-confirm-reset')) {
+    if (path === '/-confirm-reset' || path === '/confirm-reset' || incomingPath.endsWith('/admin-confirm-reset')) {
       if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
       const { email, token, new_password } = req.body || {};
       if (!email || !token || !new_password) return res.status(400).json({ error: 'Missing fields' });
