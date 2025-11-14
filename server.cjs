@@ -22,6 +22,18 @@ const supabaseAdmin = createClient(process.env.SUPABASE_URL || process.env.VITE_
 const app = express();
 app.use(bodyParser.json());
 
+// Simple CORS + preflight handler so browser preflight (OPTIONS) requests
+// to API endpoints (e.g. /api/admin-confirm-reset) don't receive 405 responses.
+app.use((req, res, next) => {
+  const origin = req.headers.origin || '*';
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-Upload-Token, X-Upload-Secret');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  return next();
+});
+
 // Serve the project's public assets (so preview HTML can reference /assets/logo.png)
 app.use('/assets', express.static(path.join(__dirname, 'public', 'assets')));
 // Fallback: serve assets from src/assets (useful in dev where images live in src)
