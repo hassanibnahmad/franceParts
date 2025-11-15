@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "package.json", "use": "@vercel/static-build" }
+  ],
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
+{
+  "version": 2,
+  "builds": [
+    { "src": "package.json", "use": "@vercel/static-build" }
+  ],
+  "routes": [
+    { "src": "/api/admin-login", "dest": "/api/admin/[...rest]" },
+    { "src": "/api/admin-request-reset", "dest": "/api/admin/[...rest]" },
+    { "src": "/api/admin-token", "dest": "/api/admin/[...rest]" },
+    { "src": "/api/admin-check-email", "dest": "/api/admin/[...rest]" },
+    { "src": "/api/admin-confirm-reset", "dest": "/api/admin/[...rest]" },
+    { "src": "/api/admin(/.*)?", "dest": "/api/admin/[...rest]" }
+  ]
+}
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "(.*)", "destination": "/index.html" }
+  ]
+}
