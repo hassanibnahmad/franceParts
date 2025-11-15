@@ -5,6 +5,11 @@
   ],
   "routes": [
     { "handle": "filesystem" },
+    { "src": "/api/admin-login", "dest": "/api/admin" },
+    { "src": "/api/admin-request-reset", "dest": "/api/admin" },
+    { "src": "/api/admin-confirm-reset", "dest": "/api/admin" },
+    { "src": "/api/admin-token", "dest": "/api/admin" },
+    { "src": "/api/admin-check-email", "dest": "/api/admin" },
     { "src": "/api/(.*)", "dest": "/api/$1" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
