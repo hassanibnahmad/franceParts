@@ -62,7 +62,16 @@ export default async function adminHandler(req, res) {
   setCors(req, res);
   if (req.method === 'OPTIONS') return res.status(204).end();
 
-  const path = (req.url || '').replace(/^\/api\/admin/, '') || '';
+  const incomingPath = (() => {
+    try {
+      return new URL(req.url, 'http://localhost').pathname;
+    } catch (e) {
+      return String(req.url || '');
+    }
+  })();
+  const path = (incomingPath || '').replace(/^\/api\/admin/, '') || '';
+  // Debug log to diagnose 405/404 routing issues in production
+  try { console.log('[admin] debug incoming', { method: req.method, incomingPath, path }); } catch (e) {}
 
   const DEBUG = process.env.DEBUG_API === 'true';
   try {
@@ -170,8 +179,9 @@ export default async function adminHandler(req, res) {
     }
 
     // POST /api/admin-confirm-reset
-    if (path === '/-confirm-reset' || path === '/confirm-reset' || req.url.endsWith('/admin-confirm-reset')) {
-      if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+    if (path === '/-confirm-reset' || path === '/confirm-reset' || incomingPath.endsWith('/admin-confirm-reset')) {
+      try { console.log('[admin] confirm-reset hit', { method: req.method, incomingPath, path }); } catch (e) {}
+      if (req.method !== 'POST') return res.status(405).json({ debug: true, message: 'Method not allowed', method: req.method, incomingPath, path });
       const { email, token, new_password } = req.body || {};
       if (!email || !token || !new_password) return res.status(400).json({ error: 'Missing fields' });
       const emailNorm = String(email).trim().toLowerCase();
