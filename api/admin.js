@@ -62,18 +62,53 @@ export default async function adminHandler(req, res) {
   setCors(req, res);
   if (req.method === 'OPTIONS') return res.status(204).end();
 
-  const incomingPath = (() => {
-    try {
-      return new URL(req.url, 'http://localhost').pathname;
-    } catch (e) {
-      return String(req.url || '');
-    }
-  })();
-  const path = (incomingPath || '').replace(/^\/api\/admin/, '') || '';
-  // Debug log to diagnose 405/404 routing issues in production
-  try { console.log('[admin] debug incoming', { method: req.method, incomingPath, path }); } catch (e) {}
+  const path = (req.url || '').replace(/^\/api\/admin/, '') || '';
 
   const DEBUG = process.env.DEBUG_API === 'true';
+    // Optional admin API secret protection (opt-in):
+    // If ADMIN_API_SECRET is set in env, require that requests either
+    // - include `Authorization: Bearer <ADMIN_API_SECRET>` OR
+    // - present a valid `admin_session` cookie that verifies with COOKIE_SECRET
+    // This allows server-to-server calls using the secret while keeping browser
+    // admin flows working via secure session cookies.
+    const ADMIN_API_SECRET = process.env.ADMIN_API_SECRET;
+    if (ADMIN_API_SECRET) {
+      const authHeader = (req.headers && (req.headers.authorization || req.headers.Authorization)) || '';
+      const bearer = String(authHeader || '');
+      const providedSecret = bearer.startsWith('Bearer ') ? bearer.slice(7).trim() : (req.headers['x-admin-secret'] || req.headers['X-Admin-Secret'] || '');
+      // check cookie session if present
+      let sessionOk = false;
+      try {
+        const cookieSecret = process.env.COOKIE_SECRET || process.env.UPLOAD_TOKEN_SECRET;
+        if (cookieSecret) {
+          const cookieHeader = req.headers && req.headers.cookie;
+          if (cookieHeader) {
+            const match = cookieHeader.split(';').map(p=>p.trim()).find(p=>p.startsWith('admin_session='));
+            if (match) {
+              const token = match.split('=')[1];
+              if (token) {
+                const parts = String(token).split('.');
+                // reuse simple verify logic: validate HMAC
+                try {
+                  const [b, mac] = parts;
+                  const expected = require('crypto').createHmac('sha256', String(cookieSecret)).update(b).digest('hex');
+                  if (mac && require('crypto').timingSafeEqual(Buffer.from(expected, 'hex'), Buffer.from(mac))) {
+                    sessionOk = true;
+                  }
+                } catch (e) {
+                  sessionOk = false;
+                }
+              }
+            }
+          }
+        }
+      } catch (e) {
+        sessionOk = false;
+      }
+      if (!sessionOk && String(providedSecret) !== String(ADMIN_API_SECRET)) {
+        return res.status(401).json({ error: 'unauthorized', message: 'Missing or invalid admin secret or no valid session cookie.' });
+      }
+    }
   try {
     // sanity check envs
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
@@ -179,9 +214,8 @@ export default async function adminHandler(req, res) {
     }
 
     // POST /api/admin-confirm-reset
-    if (path === '/-confirm-reset' || path === '/confirm-reset' || incomingPath.endsWith('/admin-confirm-reset')) {
-      try { console.log('[admin] confirm-reset hit', { method: req.method, incomingPath, path }); } catch (e) {}
-      if (req.method !== 'POST') return res.status(405).json({ debug: true, message: 'Method not allowed', method: req.method, incomingPath, path });
+    if (path === '/-confirm-reset' || path === '/confirm-reset' || req.url.endsWith('/admin-confirm-reset')) {
+      if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
       const { email, token, new_password } = req.body || {};
       if (!email || !token || !new_password) return res.status(400).json({ error: 'Missing fields' });
       const emailNorm = String(email).trim().toLowerCase();
