@@ -47,17 +47,13 @@ export default function Footer() {
             </h4>
             <div className="space-y-4">
               <div className="flex items-center justify-between bg-[#061018] p-3 rounded-md">
-                <span>Lundi - Vendredi</span>
-                <div className="text-blue-300 font-semibold">9h-18h</div>
+                <span>Lundi - Samedi</span>
+                <div className="text-blue-300 font-semibold">9h - 19h</div>
               </div>
-              <div className="flex items-center justify-between bg-[#061018] p-3 rounded-md">
-                <span>Samedi</span>
-                <div className="text-blue-300 font-semibold">9h-16h</div>
-              </div>
-              
+
               <div className="flex items-center justify-between bg-[#061018] p-3 rounded-md">
                 <span>Dimanche</span>
-                <div className="text-red-500 font-semibold">Fermé</div>
+                <div className="text-blue-300 font-semibold">10h - 18h</div>
               </div>
             </div>
         {/* separator */}

@@ -242,16 +242,12 @@ export default function Contact() {
                 </h3>
                 <div className="space-y-2 text-gray-300">
                   <div className="flex justify-between">
-                    <span>Lun - Ven</span>
-                    <span>9h00 - 18h00</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Samedi</span>
-                    <span>9h00 - 16h00</span>
+                    <span>Lun - Sam</span>
+                    <span>9h00 - 19h00</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Dimanche</span>
-                    <span className="text-red-400">Fermé</span>
+                    <span>10h00 - 18h00</span>
                   </div>
                 </div>
               </div>
