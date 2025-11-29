@@ -224,6 +224,32 @@ export default async function adminHandler(req, res) {
       return res.json({ ok: true });
     }
 
+    // POST /api/admin-change-email
+    if (path === '/-change-email' || path === '/change-email' || req.url.endsWith('/admin-change-email')) {
+      if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+      const { email, current_password, new_email } = req.body || {};
+      if (!email || !current_password || !new_email) return res.status(400).json({ error: 'Missing fields' });
+      const emailNorm = validateEmail(email);
+      if (!emailNorm) return res.status(400).json({ error: 'Invalid email' });
+      const { data: admin, error: adminErr } = await supabaseAdmin.from('admins').select('id,email,username,password_hash').ilike('email', emailNorm).limit(1).maybeSingle();
+      if (adminErr) { console.error('supabase lookup error', adminErr); return res.status(500).json({ error: 'internal' }); }
+      if (!admin) return res.status(404).json({ error: 'admin_not_found' });
+
+      const valid = await bcrypt.compare(String(current_password), admin.password_hash || '');
+      if (!valid) return res.status(403).json({ error: 'invalid_current_password' });
+
+      const newEmailNorm = validateEmail(new_email);
+      if (!newEmailNorm) return res.status(400).json({ error: 'Invalid new email' });
+      const { data: existing, error: existErr } = await supabaseAdmin.from('admins').select('id').ilike('email', newEmailNorm).limit(1).maybeSingle();
+      if (existErr) { console.error('supabase lookup error', existErr); return res.status(500).json({ error: 'internal' }); }
+      if (existing) return res.status(409).json({ error: 'email_taken' });
+
+      const { error: updErr2 } = await supabaseAdmin.from('admins').update({ email: newEmailNorm }).eq('id', admin.id);
+      if (updErr2) { console.error('update email error', updErr2); return res.status(500).json({ error: 'update_error' }); }
+
+      return res.json({ ok: true });
+    }
+
     return res.status(404).json({ error: 'Not found' });
   } catch (err) {
     // log stack for Vercel function logs
