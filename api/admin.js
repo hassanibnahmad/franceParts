@@ -23,6 +23,16 @@ function parseCookies(req) {
   return obj;
 }
 
+function validateEmail(input) {
+  if (!input) return null;
+  const email = String(input).trim().toLowerCase();
+  if (email.length > 320) return null;
+  const emailRe = /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+  if (!emailRe.test(email)) return null;
+  if (email.includes('%') || email.includes('_')) return null;
+  return email;
+}
+
 function signToken(obj, secret) {
   const payload = Object.assign({}, obj);
   const json = JSON.stringify(payload);
