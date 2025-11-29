@@ -135,6 +135,10 @@ app.post('/api/admin-request-reset', async (req, res) => {
     `Si vous n'êtes pas à l'origine de cette demande, ignorez simplement cet e-mail.\n\n` +
     `— L'équipe ${site_name}`;
 
+    // Build a combined HTML email that supports both light (older) and dark styles.
+    // Many email clients support prefers-color-scheme; we include a light default
+    // and a dark override so recipients see the familiar (old) light style when
+    // possible, and a dark style when their client uses dark mode.
     const htmlContent = `<!doctype html>
     <html lang="fr">
     <head>
@@ -142,38 +146,38 @@ app.post('/api/admin-request-reset', async (req, res) => {
       <meta name="viewport" content="width=device-width,initial-scale=1" />
       <title>Réinitialisation du mot de passe — ${site_name}</title>
       <style>
-        body {
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-          background-color: #0b1220;
-          color: #f3f4f6;
-          margin: 0;
-          padding: 24px 12px;
+        /* Light (default) - similar to the old template */
+        :root {
+          --bg: #ffffff;
+          --panel: #ffffff;
+          --text: #111827;
+          --muted: #6b7280;
+          --brand: #2563eb;
+          --brand-contrast: #ffffff;
+          --shadow: 0 8px 24px rgba(17,24,39,0.08);
         }
-        .email-wrapper {
-          max-width: 680px;
-          margin: 20px auto;
-          background: #0f1724;
-          border-radius: 10px;
-          box-shadow: 0 12px 30px rgba(2,6,23,0.6);
-          overflow: hidden;
-          border: 1px solid rgba(255,223,0,0.06);
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background-color: var(--bg); color: var(--text); margin:0; padding:0; }
+        .email-wrapper { max-width:680px; margin:40px auto; background:var(--panel); border-radius:12px; box-shadow: var(--shadow); overflow:hidden; }
+        .email-header { text-align:center; background:linear-gradient(135deg,#0f172a,#1e293b); padding:36px 24px; }
+        .brand { color:var(--brand-contrast); font-weight:800; font-size:32px; margin:0 }
+        .email-body { padding:36px 28px; }
+        h1 { font-size:20px; color:var(--text); margin:0 0 16px 0 }
+        p { margin:0 0 14px 0; line-height:1.6 }
+        a.button { display:inline-block; margin-top:20px; background-color:var(--brand); color:var(--brand-contrast); text-decoration:none; padding:14px 26px; border-radius:8px; font-weight:600; font-size:15px }
+        .link-fallback { margin-top:16px; font-size:13px; color:var(--muted); word-break:break-all }
+        .footer { padding:20px 28px; text-align:center; border-top:1px solid #f1f5f9; font-size:13px; color:var(--muted); background:#fafafa }
+        .footer a { color:var(--brand); text-decoration:none }
+
+        /* Dark overrides (newer/dark template) */
+        @media (prefers-color-scheme: dark) {
+          :root { --bg: #0b1220; --panel: #0f1724; --text: #f3f4f6; --muted: #9fb3d9; --brand: #ffd43b; --brand-contrast: #0b1220; --shadow: 0 12px 30px rgba(2,6,23,0.6); }
+          .email-header { background: var(--panel); }
+          .email-wrapper { margin:20px auto; border:1px solid rgba(255,223,0,0.06); }
+          a.button { background: var(--brand); color: var(--brand-contrast); }
+          .link-fallback a { color: var(--brand); }
         }
-        .email-header {
-          background: #0b1220;
-          padding: 28px 24px;
-          text-align: center;
-        }
-        .brand { color: #ffd43b; font-weight:800; font-size:28px; margin:0 }
-        .email-body { padding: 28px 24px; color: #e6eef8 }
-        h1 { font-size:18px; color:#fff; margin:0 0 12px }
-        p { margin:0 0 14px 0; line-height:1.6; color:#cfe3ff }
-        a.button {
-          display:inline-block; background:#ffd43b; color:#0b1220; text-decoration:none; padding:12px 22px; border-radius:8px; font-weight:700
-        }
-        .link-fallback { margin-top:12px; font-size:13px; color:#9fb3d9; word-break:break-all }
-        .footer { padding:16px 22px; text-align:center; border-top:1px solid rgba(255,255,255,0.03); font-size:13px; color:#9fb3d9; background:transparent }
-        .footer a { color:#ffd43b; text-decoration:none }
-        @media (max-width:520px) { .email-body { padding:18px 16px } a.button { width:100%; text-align:center } }
+
+        @media (max-width:520px) { .email-body { padding:24px 20px } a.button { width:100%; text-align:center } }
       </style>
     </head>
     <body>
@@ -181,16 +185,19 @@ app.post('/api/admin-request-reset', async (req, res) => {
         <div class="email-header">
           <div class="brand">${site_name}</div>
         </div>
-          <div class="email-body">
+        <div class="email-body">
           <h1>Réinitialisation de votre mot de passe</h1>
           <p>${greeting}</p>
           <p>Nous avons reçu une demande de réinitialisation du mot de passe pour votre compte <strong>${site_name}</strong>.</p>
           <p><a href="${resetLink}" target="_blank" rel="noopener" class="button">Réinitialiser mon mot de passe</a></p>
-          <p class="link-fallback">Ce lien expirera dans <strong>${expires_in_minutes} minutes</strong>.<br>If the button doesn't work, copy-paste this link into your browser:<br><a href="${resetLink}" target="_blank" style="color:#ffd43b">${resetLink}</a></p>
-          <p style="font-size:13px;color:#9fb3d9;">Si vous n'êtes pas à l'origine de cette demande, ignorez simplement cet e-mail ou contactez notre support.</p>
-          <p style="margin-top:18px;font-size:14px;color:#cfe3ff">Cordialement,<br>L’équipe <strong>${site_name}</strong></p>
+          <p class="link-fallback">Ce lien expirera dans <strong>${expires_in_minutes} minutes</strong>.<br>
+            Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :<br>
+            <a href="${resetLink}" target="_blank" style="color:inherit">${resetLink}</a>
+          </p>
+          <p style="font-size:13px;color:var(--muted);">Si vous n'êtes pas à l'origine de cette demande, ignorez simplement cet e-mail ou contactez notre support.</p>
+          <p style="margin-top:20px;font-size:14px;color:var(--muted);">Cordialement,<br>L’équipe <strong>${site_name}</strong></p>
         </div>
-        
+        <div class="footer">Vous recevez cet e-mail car une demande de réinitialisation a été faite pour votre compte. <a href="mailto:${support_email}">Contactez le support</a> si nécessaire.</div>
       </div>
     </body>
     </html>`;
