@@ -205,7 +205,15 @@ export default async function adminHandler(req, res) {
       const valid = await bcrypt.compare(String(current_password), admin.password_hash || '');
       if (!valid) return res.status(403).json({ error: 'invalid_current_password' });
 
-      if (new_password.length < 8 || !/(?=.*[A-Z])(?=.*\\d)/.test(new_password)) {
+      // Server-side password strength check. Provide limited debug info
+      // when DEBUG_API=true (do NOT log the raw password).
+      const DEBUG = process.env.DEBUG_API === 'true';
+      const pwdLen = typeof new_password === 'string' ? new_password.length : 0;
+      const hasUpper = /[A-Z]/.test(String(new_password));
+      const hasDigit = /\d/.test(String(new_password));
+      if (DEBUG) console.log('[admin-change-password] new_password: len=%d hasUpper=%s hasDigit=%s', pwdLen, hasUpper, hasDigit);
+
+      if (pwdLen < 8 || !hasUpper || !hasDigit) {
         return res.status(400).json({ error: 'weak_password' });
       }
 
