@@ -187,6 +187,7 @@ export default async function adminHandler(req, res) {
     .email-wrapper { max-width:680px; margin:28px auto; border-radius:12px; overflow:hidden; background:linear-gradient(180deg,#071025 0%, #0b1220 100%); box-shadow:0 12px 40px rgba(2,6,23,0.6); }
     .email-header { text-align:center; padding:28px 20px; background:linear-gradient(135deg,#051026,#0b1220); }
     .email-header img { width:140px; height:auto; display:block; margin:0 auto 8px; }
+    .brand { font-size:28px; font-weight:800; color:#FBBF24; letter-spacing:0.5px; }
     .email-body { padding:28px 28px; background:#0f1724; color:#cbd5e1 }
     h1 { color:#fff; font-size:20px; margin:0 0 12px 0 }
     p { margin:0 0 14px 0; line-height:1.6 }
@@ -200,7 +201,7 @@ export default async function adminHandler(req, res) {
 <body>
   <div class="email-wrapper" role="article" aria-label="Réinitialisation du mot de passe">
     <div class="email-header">
-      <img src="${logoUrl}" alt="${site_name} logo" />
+      <div class="brand">${site_name}</div>
     </div>
     <div class="email-body">
       <h1>Réinitialisation de votre mot de passe</h1>
