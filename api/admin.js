@@ -192,6 +192,30 @@ export default async function adminHandler(req, res) {
       return res.json({ ok: true });
     }
 
+    // POST /api/admin-change-password
+    if (path === '/-change-password' || path === '/change-password' || req.url.endsWith('/admin-change-password')) {
+      if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+      const { email, current_password, new_password } = req.body || {};
+      if (!email || !current_password || !new_password) return res.status(400).json({ error: 'Missing fields' });
+      const emailNorm = String(email).trim().toLowerCase();
+      const { data: admin, error: adminErr } = await supabaseAdmin.from('admins').select('id,email,username,password_hash').ilike('email', emailNorm).limit(1).maybeSingle();
+      if (adminErr) { console.error('supabase lookup error', adminErr); return res.status(500).json({ error: 'internal' }); }
+      if (!admin) return res.status(404).json({ error: 'admin_not_found' });
+
+      const valid = await bcrypt.compare(String(current_password), admin.password_hash || '');
+      if (!valid) return res.status(403).json({ error: 'invalid_current_password' });
+
+      if (new_password.length < 8 || !/(?=.*[A-Z])(?=.*\\d)/.test(new_password)) {
+        return res.status(400).json({ error: 'weak_password' });
+      }
+
+      const newHash = await bcrypt.hash(new_password, 10);
+      const { error: updErr } = await supabaseAdmin.from('admins').update({ password_hash: newHash }).eq('id', admin.id);
+      if (updErr) { console.error('update password error', updErr); return res.status(500).json({ error: 'update_error' }); }
+
+      return res.json({ ok: true });
+    }
+
     return res.status(404).json({ error: 'Not found' });
   } catch (err) {
     // log stack for Vercel function logs
