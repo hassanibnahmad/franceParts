@@ -171,8 +171,56 @@ export default async function adminHandler(req, res) {
         try {
           const transporter = nodemailer.createTransport({ host: smtpHost, port: Number(smtpPort), secure: Number(smtpPort) === 465, auth: { user: smtpUser, pass: smtpPass } });
           const subject = `Réinitialisation du mot de passe — ${site_name}`;
-          const plainText = `Bonjour,\n\nPour réinitialiser: ${resetLink}\n`;
-          const html = `<p>Bonjour,</p><p><a href="${resetLink}">Réinitialiser mon mot de passe</a></p>`;
+          const expires_in_minutes = 10;
+          const plainText = `Bonjour,\n\nNous avons reçu une demande de réinitialisation du mot de passe pour votre compte ${site_name}.\n\nOuvrez ce lien pour réinitialiser (valide ${expires_in_minutes} minutes):\n${resetLink}\n\nSi vous n'êtes pas à l'origine de cette demande, ignorez ce message.\n\nCordialement,\nL'équipe ${site_name}`;
+
+          const logoUrl = (process.env.SITE_URL || process.env.DEV_SITE_ORIGIN || 'https://www.franceparts.be') + '/assets/logo.png';
+
+          const html = `<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Réinitialisation du mot de passe — ${site_name}</title>
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial; margin:0; padding:0; background:#0b1020; color:#e6eef8 }
+    .email-wrapper { max-width:680px; margin:28px auto; border-radius:12px; overflow:hidden; background:linear-gradient(180deg,#071025 0%, #0b1220 100%); box-shadow:0 12px 40px rgba(2,6,23,0.6); }
+    .email-header { text-align:center; padding:28px 20px; background:linear-gradient(135deg,#051026,#0b1220); }
+    .email-header img { width:140px; height:auto; display:block; margin:0 auto 8px; }
+    .email-body { padding:28px 28px; background:#0f1724; color:#cbd5e1 }
+    h1 { color:#fff; font-size:20px; margin:0 0 12px 0 }
+    p { margin:0 0 14px 0; line-height:1.6 }
+    .btn { display:inline-block; background:#FBBF24; color:#111827; text-decoration:none; padding:12px 22px; border-radius:8px; font-weight:600 }
+    .link-fallback { margin-top:12px; font-size:13px; color:#94a3b8; word-break:break-all }
+    .muted { color:#94a3b8; font-size:13px }
+    .footer { padding:18px 28px; text-align:center; color:#7b8796; font-size:13px }
+    @media (max-width:520px){ .email-body{padding:20px} .btn{width:100%; text-align:center} }
+  </style>
+</head>
+<body>
+  <div class="email-wrapper" role="article" aria-label="Réinitialisation du mot de passe">
+    <div class="email-header">
+      <img src="${logoUrl}" alt="${site_name} logo" />
+    </div>
+    <div class="email-body">
+      <h1>Réinitialisation de votre mot de passe</h1>
+      <p>Bonjour,</p>
+      <p>Nous avons reçu une demande de réinitialisation du mot de passe pour votre compte <strong>${site_name}</strong>.</p>
+      <p>Pour choisir un nouveau mot de passe, cliquez sur le bouton ci-dessous :</p>
+      <p><a href="${resetLink}" target="_blank" rel="noopener" class="btn">Réinitialiser mon mot de passe</a></p>
+      <p class="link-fallback">
+        Ce lien expirera dans <strong>${expires_in_minutes} minutes</strong>.<br />
+        Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :<br />
+        <a href="${resetLink}" target="_blank" style="color:#FBBF24; text-decoration:none">${resetLink}</a>
+      </p>
+      <p class="muted">Si vous n'êtes pas à l'origine de cette demande, ignorez simplement cet e-mail ou contactez notre support.</p>
+      <p style="margin-top:18px;color:#cbd5e1">Cordialement,<br/>L'équipe <strong>${site_name}</strong></p>
+    </div>
+    <div class="footer">&copy; ${new Date().getFullYear()} ${site_name}</div>
+  </div>
+</body>
+</html>`;
+
           await transporter.sendMail({ from: process.env.SMTP_FROM || smtpUser, to: admin.email, subject, text: plainText, html });
         } catch (mailErr) { console.error('contact notification send failed', mailErr); }
       }
