@@ -1,5 +1,15 @@
 {
   "rewrites": [
+    { "source": "/api/admin-login", "destination": "/api/admin.js" },
+    { "source": "/api/admin-request-reset", "destination": "/api/admin.js" },
+    { "source": "/api/admin-confirm-reset", "destination": "/api/admin.js" },
+    { "source": "/api/admin-change-password", "destination": "/api/admin.js" },
+    { "source": "/api/admin-token", "destination": "/api/admin.js" },
+    { "source": "/api/admin-check-email", "destination": "/api/admin.js" }
+  ]
+}
+{
+  "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "(.*)", "destination": "/index.html" }
   ]
